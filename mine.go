@@ -60,7 +60,7 @@ func main() {
     fmt.Printf("Moving left is: %t\n", mine.validMove(Coord{mine.robot.coord[0], mine.robot.coord[1]-1}))
     fmt.Printf("Moving down is: %t\n", mine.validMove(Coord{mine.robot.coord[0]+1, mine.robot.coord[1]}))
 
-    //serve(robot)
+    serve(mine)
 }
 
 func (mine *Mine) ParseLayout() {
@@ -99,27 +99,27 @@ func (mine *Mine) ParseLayout() {
 //    }
 //}
 
-//func serve(robot *Robot) {
-//    r := bufio.NewReaderSize(os.Stdin, 64)
-//    
-//    var err error = nil
-//
-//    for err == nil {
-//        char, err := r.ReadByte()
-//
-//        if char == 'L' {
-//            fmt.Println(robot.validMove(Coord{robot.coord[0], robot.coord[1]-1}))
-//        } else if char == 'R' {
-//            fmt.Println(robot.validMove(Coord{robot.coord[0], robot.coord[1]+1}))
-//        } else if char == 'U' {
-//            fmt.Println(robot.validMove(Coord{robot.coord[0]-1, robot.coord[1]}))
-//        } else if char == 'D' {
-//            fmt.Println(robot.validMove(Coord{robot.coord[0]+1, robot.coord[1]}))
-//        }
-//
-//        _ = err
-//    }
-//}
+func serve(mine *Mine) {
+    r := bufio.NewReaderSize(os.Stdin, 64)
+    
+    var err error = nil
+
+    for err == nil {
+        char, err := r.ReadByte()
+
+        if char == 'L' {
+            fmt.Println(mine.validMove(Coord{mine.robot.coord[0], mine.robot.coord[1]-1}))
+        } else if char == 'R' {
+            fmt.Println(mine.validMove(Coord{mine.robot.coord[0], mine.robot.coord[1]+1}))
+        } else if char == 'U' {
+            fmt.Println(mine.validMove(Coord{mine.robot.coord[0]-1, mine.robot.coord[1]}))
+        } else if char == 'D' {
+            fmt.Println(mine.validMove(Coord{mine.robot.coord[0]+1, mine.robot.coord[1]}))
+        }
+
+        _ = err
+    }
+}
 
 func (mine *Mine) validMove(move Coord) bool {
     y := Abs(mine.robot.coord[0]-move[0])
