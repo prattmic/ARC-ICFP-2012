@@ -7,6 +7,20 @@ import (
 )
 
 type Map [][]byte
+type Coord [2]int
+type Robot struct {
+    coord Coord
+    mine Map
+}
+
+var RoboChar byte = 'R'
+var RockChar byte = '*'
+var WallChar byte = '#'
+var LambdaChar byte = '\\'
+var EarthChar byte = '.'
+var EmptyChar byte = ' '
+var CLiftChar byte = 'L'
+var OLiftChar byte = 'o'
 
 func main() {
     mine, err := MapFromFile("maps/contest1.map", 100)
@@ -18,20 +32,42 @@ func main() {
         fmt.Println(string(mine[i]))
     }
 
-    robot := mine.currentLocation()
-    fmt.Printf("You are at %d\n", robot)
+    robot := new(Robot)
+    robot.mine = mine
+
+    robot.coord = mine.currentLocation()
+    fmt.Printf("You are at %d\n", robot.coord)
+
+    fmt.Printf("Moving left is: %t\n", robot.validMove(Coord{robot.coord[0], robot.coord[1]-1}))
+    fmt.Printf("Moving down is: %t\n", robot.validMove(Coord{robot.coord[0]+1, robot.coord[1]}))
 }
 
-func (mine Map) currentLocation() ([2]int) {
+func (robo *Robot) validMove(move Coord) bool {
+    y := Abs(robo.coord[0]-move[0])
+    x := Abs(robo.coord[1]-move[1])
+    tile := robo.mine[move[0]][move[1]]
+
+    if x != 0 && y != 0 {
+        return false
+    } else if x > 1 || y > 1 {
+        return false
+    } else if tile == EmptyChar || tile == EarthChar || tile == LambdaChar || tile == OLiftChar {
+        return true
+    }
+
+    return false
+}
+
+func (mine Map) currentLocation() (Coord) {
     for i := 0; i < len(mine); i++ {
         for j := 0; j < len(mine[i]); j++ {
             if mine[i][j] == 'R' {
-                return [2]int{i,j}
+                return Coord{i,j}
             }
         }
     }
 
-    return [2]int{-1,-1}
+    return Coord{-1,-1}
 }
 
 func MapFromFile(name string, capacity uint32) (mine Map, err error) {
@@ -55,4 +91,12 @@ func MapFromFile(name string, capacity uint32) (mine Map, err error) {
     }
 
     return data, nil
+}
+
+func Abs(n int) int {
+    if n < 0 {
+        return -n
+    }
+
+    return n
 }
