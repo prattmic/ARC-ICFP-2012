@@ -20,7 +20,7 @@ var LambdaChar byte = '\\'
 var EarthChar byte = '.'
 var EmptyChar byte = ' '
 var CLiftChar byte = 'L'
-var OLiftChar byte = 'o'
+var OLiftChar byte = 'O'
 
 func main() {
     mine, err := MapFromFile("maps/contest1.map", 100)
@@ -28,7 +28,7 @@ func main() {
         fmt.Printf("Error: %s\n", err)
     }
 
-    for i := 0; i < len(mine); i++ {
+    for i := range mine {
         fmt.Println(string(mine[i]))
     }
 
@@ -40,6 +40,30 @@ func main() {
 
     fmt.Printf("Moving left is: %t\n", robot.validMove(Coord{robot.coord[0], robot.coord[1]-1}))
     fmt.Printf("Moving down is: %t\n", robot.validMove(Coord{robot.coord[0]+1, robot.coord[1]}))
+
+    serve(robot)
+}
+
+func serve(robot *Robot) {
+    r := bufio.NewReaderSize(os.Stdin, 64)
+    
+    var err error = nil
+
+    for err == nil {
+        char, err := r.ReadByte()
+
+        if char == 'L' {
+            fmt.Println(robot.validMove(Coord{robot.coord[0], robot.coord[1]-1}))
+        } else if char == 'R' {
+            fmt.Println(robot.validMove(Coord{robot.coord[0], robot.coord[1]+1}))
+        } else if char == 'U' {
+            fmt.Println(robot.validMove(Coord{robot.coord[0]-1, robot.coord[1]}))
+        } else if char == 'D' {
+            fmt.Println(robot.validMove(Coord{robot.coord[0]+1, robot.coord[1]}))
+        }
+
+        _ = err
+    }
 }
 
 func (robo *Robot) validMove(move Coord) bool {
@@ -59,8 +83,8 @@ func (robo *Robot) validMove(move Coord) bool {
 }
 
 func (mine Map) currentLocation() (Coord) {
-    for i := 0; i < len(mine); i++ {
-        for j := 0; j < len(mine[i]); j++ {
+    for i := range mine {
+        for j := range mine[i] {
             if mine[i][j] == 'R' {
                 return Coord{i,j}
             }
