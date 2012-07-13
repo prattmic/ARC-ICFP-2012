@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-    file, err := os.Open("maps/contest1.map")
+    file, err := os.Open("maps/contest10.map")
     if err != nil {
         fmt.Printf("Error: %s", err)
     }
@@ -15,7 +15,7 @@ func main() {
     
     r := bufio.NewReaderSize(file, int(fileinfo.Size()))
 
-    data := make([][]byte, 10, 100)
+    data := make([][]byte, 0, 100)
 
     i := 0
     for ; ; i++ {
@@ -23,7 +23,7 @@ func main() {
         if err != nil {
             break
         }
-        data[i] = line;
+        data = append(data, line)
     }
 
     j := i
