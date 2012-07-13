@@ -6,16 +6,29 @@ import (
         "fmt"
 )
 
+type Map [][]byte
+
 func main() {
-    file, err := os.Open("maps/contest10.map")
+    mine, err := MapFromFile("maps/contest6.map", 100)
     if err != nil {
-        fmt.Printf("Error: %s", err)
+        fmt.Printf("Error: %s\n", err)
+    }
+
+    for i := 0; i < len(mine); i++ {
+        fmt.Println(string(mine[i]))
+    }
+}
+
+func MapFromFile(name string, capacity uint32) (mine Map, err error) {
+    file, err := os.Open(name)
+    if err != nil {
+        return nil, err
     }
     fileinfo, err := file.Stat()
     
     r := bufio.NewReaderSize(file, int(fileinfo.Size()))
 
-    data := make([][]byte, 0, 100)
+    data := make([][]byte, 0, capacity)
 
     i := 0
     for ; ; i++ {
@@ -26,8 +39,5 @@ func main() {
         data = append(data, line)
     }
 
-    j := i
-    for i = 0; i < j; i++ {
-        fmt.Println(string(data[i]))
-    }
+    return data, nil
 }
