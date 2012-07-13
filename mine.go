@@ -15,6 +15,7 @@ type Robot struct {
     waterproof  int
     moves       int
     watermoves  int
+    lambda      int
 }
 type Lift struct {
     coord       Coord
@@ -60,6 +61,14 @@ func main() {
     fmt.Printf("Moving left is: %t\n", mine.validMove(Coord{mine.robot.coord[0], mine.robot.coord[1]-1}))
     fmt.Printf("Moving down is: %t\n", mine.validMove(Coord{mine.robot.coord[0]+1, mine.robot.coord[1]}))
 
+
+    mine.update(Coord{2,4})
+for i := range mine.layout {
+        fmt.Println(string(mine.layout[i]))
+    }
+
+
+
     serve(mine)
 }
 
@@ -83,21 +92,41 @@ func (mine *Mine) ParseLayout() {
     }
 }
 
-//func (mine *Map) update(move Coord) Map {
-//    updated := make([][]byte, len(mine))
-//
-//    for i := range mine {
-//        updated[i] = make([]byte, len(mine[i]))
-//
-//        for j := range mine[i] {
-//            if mine[i][j] == WallChar {
-//                updated[i][j] = WallChar
-//            } else if mine[i][j] == EarthChar {
-//                updated[i][j] = EarthChar
-//            }
-//        }
-//    }
-//}
+func (mine *Mine) update(move Coord) {
+    updated := make([][]byte, len(mine.layout))
+
+    mine.robot.coord = move
+    for i := range mine.layout {
+        updated[i] = make([]byte, len(mine.layout[i]))
+	
+        for j := range mine.layout[i] {
+            if i==move[0] && j==move[1] {
+		updated[i][j] = RoboChar
+                mine.robot.lambda++
+            } else if mine.layout[i][j] == RoboChar && (i==move[0] || j==move[1]) {
+                updated[i][j] = EmptyChar
+            } else if mine.layout[i][j] == EmptyChar{
+		updated[i][j] = EmptyChar
+            } else if mine.layout[i][j] == LambdaChar{
+                updated[i][j] = LambdaChar
+            } else if mine.layout[i][j] == EarthChar{
+                updated[i][j] = EarthChar
+            } else if mine.layout[i][j] == RockChar{
+                //Rock logic goes here                
+                updated[i][j] = RockChar
+            } else if mine.layout[i][j] == WallChar {
+                updated[i][j] = WallChar
+            } else if mine.layout[i][j] == OLiftChar {
+                updated[i][j] = OLiftChar
+            } else if mine.layout[i][j] == CLiftChar {
+                updated[i][j] = CLiftChar
+            } else if mine.layout[i][j] == EarthChar {
+                updated[i][j] = EarthChar
+            }
+        }
+    }
+    mine.layout = updated 
+}
 
 func serve(mine *Mine) {
     r := bufio.NewReaderSize(os.Stdin, 64)
@@ -161,6 +190,7 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
     mine.water = 0
     mine.flooding = 0
     mine.robot.waterproof = 10
+    mine.robot.lambda = 0
 
     i := 0
     for ; ; i++ {
