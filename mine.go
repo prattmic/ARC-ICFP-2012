@@ -8,8 +8,8 @@ import (
         "fmt"
 )
 
-type Map [][]byte
-type Coord [2]int
+type Map        [][]byte
+type Coord      [2]int
 type Robot struct {
     coord       Coord
     waterproof  int
