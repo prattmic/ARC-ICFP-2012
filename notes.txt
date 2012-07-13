@@ -1,0 +1,2 @@
+11:13 < prattmic> Can we assume that the map will not change size during the mission?
+11:14 < bentnib> prattmic: yes
