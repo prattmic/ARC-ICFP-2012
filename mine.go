@@ -36,8 +36,6 @@ func main() {
         fmt.Println(string(mine.Layout[i]))
     }
 
-
-
     serve(mine)
 }
 
