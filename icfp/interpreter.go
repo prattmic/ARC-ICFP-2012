@@ -253,63 +253,46 @@ func (mine *Mine) ValidMove(move Coord) bool {
     y := Abs(mine.Robot.Coord[0]-move[0])
     x := Abs(mine.Robot.Coord[1]-move[1])
     tile := mine.Layout[move[0]][move[1]]
-    //fmt.Printf("%c\n", tile)
-
     // -1 = Left 0 = No horz 1 = Right
     horz := move[1] - mine.Robot.Coord[1]
 
-    if x != 0 && y != 0 {
-        //fmt.Println("Can't go 2 ways")
+    if (x != 0 && y != 0) || x > 1 || y > 1  {                              // Wrong move distance
         return false
-    } else if x > 1 || y > 1 {
-        //fmt.Println("Too far")
+    }
+
+    if mine.Flooding != 0 && mine.IsFlooded(move) && mine.Robot.Waterproof <= mine.Robot.Watermoves {   // Drowning
         return false
-    } else if tile == RockChar {
-        // NOTE: If empty space below rock, you cannot move horizontally into its space unless you can push it
-        // Push left
-        if horz == -1 {
-            if mine.Layout[move[0]][move[1]-1] == EmptyChar {
-                return true
-            }
-        // Push right
-        } else if horz == 1 {
-            if mine.Layout[move[0]][move[1]+1] == EmptyChar {
-                return true
-            }
-        } else {
-            //fmt.Println("Bad push")
+    }
+
+    switch tile {
+    case RockChar:
+        switch {
+        case horz == -1 && mine.Layout[move[0]][move[1]-1] == EmptyChar:    // Pushable Rock
+            return true
+        case horz == 1 && mine.Layout[move[0]][move[1]+1] == EmptyChar:     // Pushable Rock
+            return true
+        default:
             return false
         }
-    } else if tile == EmptyChar || tile == EarthChar || tile == LambdaChar || tile == OLiftChar {
-        if mine.Layout[move[0]-1][move[1]] == RockChar {
+    case EmptyChar, EarthChar, LambdaChar, OLiftChar:
+        switch {
+        case mine.Layout[move[0]-1][move[1]] == RockChar:                   // Rock above space
             rock, err := mine.Rocks.FindRock(Coord{move[0]-1,move[1]})
             if err != nil {
                 fmt.Printf("Error: %s\n", err)
                 return false
             }
 
-            // Falling
-            if mine.Rocks[rock].Curr[0] != mine.Rocks[rock].Prev[0] {
-                //fmt.Println("Falling rock")
-                return false
-            } else {
-                return true
-            }
-        // Rock 2 up will start falling, causing death
-        } else if mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar {
-            //fmt.Println("Rock 2 up will start falling")
+            // Can move if rock above isn't falling
+            return mine.Rocks[rock].Curr[0] == mine.Rocks[rock].Prev[0];
+        case mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
             return false
-        } else {
+        default:
             return true
         }
     }
 
-    if mine.Flooding != 0 && mine.IsFlooded(move) && mine.Robot.Waterproof <= mine.Robot.Watermoves {
-        //fmt.Println("Drowned")
-        return false
-    }
-
-    //fmt.Println("Fell through if tree")
+    // If move was valid, you should have returned by now
     return false
 }
 
