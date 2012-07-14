@@ -10,6 +10,7 @@ import (
 
 type Map        [][]byte
 type Coord      [2]int
+type CoordSlice []Coord
 type Robot struct {
     Coord       Coord
     Waterproof  int
@@ -21,11 +22,16 @@ type Lift struct {
     Coord       Coord
     Open        bool
 }
+type Rock struct {
+    Curr        Coord
+    Prev        Coord
+}
+type RockSlice  []Rock
 type Mine struct {
     Layout      Map
     Robot       Robot
-    Lambda      []Coord
-    Rocks       []Coord
+    Lambda      CoordSlice
+    Rocks       RockSlice
     Lift        Lift
     Water       int
     Flooding    int
@@ -42,14 +48,14 @@ var OLiftChar   byte = 'O'
 
 func (mine *Mine) ParseLayout() {
     mine.Lambda = make([]Coord, 0, 100)
-    mine.Rocks = make([]Coord, 0, 100)
+    mine.Rocks = make([]Rock, 0, 100)
 
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
             if mine.Layout[i][j] == LambdaChar {
                 mine.Lambda = append(mine.Lambda, Coord{i,j})
             } else if mine.Layout[i][j] == RockChar {
-                mine.Rocks = append(mine.Rocks, Coord{i,j})
+                mine.Rocks = append(mine.Rocks, Rock{Coord{i,j}, Coord{i,j}})
             } else if mine.Layout[i][j] == CLiftChar {
                 mine.Lift.Coord = Coord{i,j}
                 mine.Lift.Open = false
@@ -74,7 +80,7 @@ func (mine *Mine) Update(move Coord) {
         mine.Robot.Lambda++
 
         /* Get index in list */
-        coordi, err := IndexCoord(mine.Lambda, Coord{move[0], move[1]})
+        coordi, err := mine.Lambda.FindCoord(Coord{move[0], move[1]})
         if err != nil {
             fmt.Printf("Error: %s\n", err)
             return
@@ -104,14 +110,39 @@ func (mine *Mine) Update(move Coord) {
                     //Rule 1
                     updated[i][j] = EmptyChar
                     updated[i+1][j] = RockChar
+
+                    rock, err := mine.Rocks.FindRock(Coord{i,j})
+                    if err != nil {
+                        fmt.Printf("Error: %s\n", err)
+                        return
+                    }
+
+                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    mine.Rocks[rock].Curr = Coord{i+1,j}
                 } else if (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar && mine.Layout[i+1][j+1] == EmptyChar {
                     //Rule 2 and 4
                     updated[i][j] = EmptyChar
                     updated[i+1][j+1] = RockChar
+
+                    rock, err := mine.Rocks.FindRock(Coord{i,j})
+                    if err != nil {
+                        fmt.Printf("Error: %s\n", err)
+                        return
+                    }
+                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    mine.Rocks[rock].Curr = Coord{i+1,j+1}
                 } else if mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar {
                     //Rule 3
                     updated[i][j] = EmptyChar
                     updated[i+1][j-1] = RockChar
+
+                    rock, err := mine.Rocks.FindRock(Coord{i,j})
+                    if err != nil {
+                        fmt.Printf("Error: %s\n", err)
+                        return
+                    }
+                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    mine.Rocks[rock].Curr = Coord{i+1,j-1}
                 } else {
                     updated[i][j] = RockChar
                 }             
@@ -131,6 +162,7 @@ func (mine *Mine) Update(move Coord) {
     }
 
     mine.Layout = updated 
+    mine.Robot.Moves++
 }
 
 func (mine *Mine) ValidMove(move Coord) bool {
