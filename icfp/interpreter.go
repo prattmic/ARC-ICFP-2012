@@ -69,6 +69,8 @@ func (mine *Mine) ParseLayout() {
 }
 
 func (mine *Mine) Update(move Coord) {
+    var updatedRockPrev = false
+
     updated := make([][]byte, len(mine.Layout))
 
     // Create new blank map
@@ -97,9 +99,29 @@ func (mine *Mine) Update(move Coord) {
     if mine.Layout[move[0]][move[1]] == RockChar {      
         if mine.Robot.Coord[1]<move[1] {
             mine.Layout[move[0]][move[1]+1] = RockChar
-	} else if mine.Robot.Coord[1]>move[1] {
+
+            rock, err := mine.Rocks.FindRock(Coord{move[0],move[1]})
+            if err != nil {
+                fmt.Printf("Error: %s\n", err)
+                return
+            }
+
+            mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+            mine.Rocks[rock].Curr = Coord{move[0],move[1]+1}
+            updatedRockPrev = true
+        } else if mine.Robot.Coord[1]>move[1] {
             mine.Layout[move[0]][move[1]-1] = RockChar
-	} 
+
+            rock, err := mine.Rocks.FindRock(Coord{move[0],move[1]})
+            if err != nil {
+                fmt.Printf("Error: %s\n", err)
+                return
+            }
+
+            mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+            mine.Rocks[rock].Curr = Coord{move[0],move[1]-1}
+            updatedRockPrev = true
+        } 
     }
 
     //Check for completion    
@@ -137,7 +159,9 @@ func (mine *Mine) Update(move Coord) {
                         return
                     }
 
-                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    if updatedRockPrev == false {
+                        mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    }
                     mine.Rocks[rock].Curr = Coord{i+1,j}
                 } else if (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar && mine.Layout[i+1][j+1] == EmptyChar {
                     //Rule 2 and 4
@@ -149,7 +173,9 @@ func (mine *Mine) Update(move Coord) {
                         fmt.Printf("Error: %s\n", err)
                         return
                     }
-                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    if updatedRockPrev == false {
+                        mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    }
                     mine.Rocks[rock].Curr = Coord{i+1,j+1}
                 } else if mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar {
                     //Rule 3
@@ -161,7 +187,9 @@ func (mine *Mine) Update(move Coord) {
                         fmt.Printf("Error: %s\n", err)
                         return
                     }
-                    mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    if updatedRockPrev == false {
+                        mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    }
                     mine.Rocks[rock].Curr = Coord{i+1,j-1}
                 } else {
                     updated[i][j] = RockChar
@@ -205,7 +233,7 @@ func (mine *Mine) ValidMove(move Coord) bool {
     } else if tile == RockChar {
         // NOTE: If empty space below rock, you cannot move horizontally into its space unless you can push it
         // Push left
-        } else if horz == -1 {
+        if horz == -1 {
             if mine.Layout[move[0]][move[1]-1] == EmptyChar {
                 return true
             }
