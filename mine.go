@@ -11,7 +11,7 @@ import (
 
 func main() {
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/trampoline1.map", 100)
+    err := mine.FromFile("maps/pratttramp1.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
@@ -20,12 +20,12 @@ func main() {
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }
+    mine.ParseLayout()
     fmt.Printf("Water: %d\n", mine.Water)
     fmt.Printf("Flooding: %d\n", mine.Flooding)
     fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
     fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
-    mine.ParseLayout()
     fmt.Printf("\nMine struct:\n%+v\n\n", mine)
 
     fmt.Printf("Moving left allowed: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}))
@@ -34,7 +34,7 @@ func main() {
     fmt.Printf("Moving up allowed: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}))
 
 
-    mine.Update(icfp.Coord{1,3})
+    mine.Update(icfp.Coord{2,3})
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }

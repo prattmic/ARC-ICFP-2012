@@ -43,6 +43,16 @@ func (mine *Mine) TargetCoord(n int, coord Coord) error {
     return errors.New("Item not found in Trampolines")
 }
 
+func (mine *Mine) RemoveTramps(targ Target) {
+    for key, value := range mine.Trampolines {
+        if value.Num == targ.Num {
+            mine.Layout[value.TrampCoord[0]][value.TrampCoord[1]] = EmptyChar
+            mine.Layout[value.Coord[0]][value.Coord[1]] = EmptyChar
+            delete(mine.Trampolines, key)
+        }
+    }
+}
+
 func Abs(n int) int {
     if n < 0 {
         return -n

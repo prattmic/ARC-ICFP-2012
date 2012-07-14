@@ -31,6 +31,7 @@ type RockSlice  []Rock
 type Target struct {
     Num         int
     Coord       Coord
+    TrampCoord  Coord
 }
 type Tramp      map[string]Target
 type Mine struct {
@@ -60,19 +61,23 @@ func (mine *Mine) ParseLayout() {
 
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
-            switch mine.Layout[i][j] {
-            case LambdaChar:
+            switch {
+            case mine.Layout[i][j] == LambdaChar:
                 mine.Lambda = append(mine.Lambda, Coord{i,j})
-            case RockChar:
+            case mine.Layout[i][j] == RockChar:
                 mine.Rocks = append(mine.Rocks, Rock{Coord{i,j}, Coord{i,j}})
-            case CLiftChar:
+            case mine.Layout[i][j] == CLiftChar:
                 mine.Lift.Coord = Coord{i,j}
                 mine.Lift.Open = false
-            case RoboChar:
+            case mine.Layout[i][j] == RoboChar:
                 mine.Robot.Coord = Coord{i,j}
-            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+            case '0' <= mine.Layout[i][j] && mine.Layout[i][j] <= '9':
                 num, _ := strconv.Atoi(string(mine.Layout[i][j]))
                 mine.TargetCoord(num, Coord{i, j})
+            case 'A' <= mine.Layout[i][j] && mine.Layout[i][j] <= 'Z':
+                targ := mine.Trampolines[string(mine.Layout[i][j])]
+                targ.TrampCoord = Coord{i,j}
+                mine.Trampolines[string(mine.Layout[i][j])] = targ
             }
         }
     }
@@ -80,6 +85,7 @@ func (mine *Mine) ParseLayout() {
 
 func (mine *Mine) Update(move Coord) {
     var updatedRockPrev = false
+    var trampjump = false
 
     updated := make([][]byte, len(mine.Layout))
 
@@ -90,8 +96,9 @@ func (mine *Mine) Update(move Coord) {
 
 
     //Robot Movement
+    switch {
     //Get lambda
-    if mine.Layout[move[0]][move[1]]==LambdaChar {   
+    case mine.Layout[move[0]][move[1]] == LambdaChar:
         mine.Robot.Lambda++
 
         /* Get index in list */
@@ -103,10 +110,8 @@ func (mine *Mine) Update(move Coord) {
 
         /* Delete it */
         mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
-    }
-
     //Move rock
-    if mine.Layout[move[0]][move[1]] == RockChar {      
+    case mine.Layout[move[0]][move[1]] == RockChar:
         switch {
         case mine.Robot.Coord[1]<move[1]:
             mine.Layout[move[0]][move[1]+1] = RockChar
@@ -133,37 +138,41 @@ func (mine *Mine) Update(move Coord) {
             mine.Rocks[rock].Curr = Coord{move[0],move[1]-1}
             updatedRockPrev = true
         }
-    }
+    //Trampoline
+    case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'Z':
+        trampjump = true
+        targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
+        mine.RemoveTramps(targ)
 
+        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
+        mine.Layout[move[0]][move[1]] = EmptyChar
+        mine.Layout[targ.Coord[0]][targ.Coord[1]] = RoboChar
+        mine.Robot.Coord = targ.Coord
     //Check for completion    
-    if mine.Layout[move[0]][move[1]]==OLiftChar {
+    case mine.Layout[move[0]][move[1]] == OLiftChar:
         mine.Complete = true
         return
-    } else {
-        mine.Complete = false
     }
 
+    mine.Complete = false
+
     //Move the robot
-    mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
-    mine.Layout[move[0]][move[1]] = RoboChar
-    mine.Robot.Coord = move
+    if !trampjump {
+        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
+        mine.Layout[move[0]][move[1]] = RoboChar
+        mine.Robot.Coord = move
+    }
 
     // Loop through and update the level
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
             switch mine.Layout[i][j] {
-            case RoboChar:
-                updated[i][j] = RoboChar
+            default:
+                updated[i][j] = mine.Layout[i][j]
             case EmptyChar: 
                 if updated[i][j] != RockChar {
                     updated[i][j] = EmptyChar
                 }
-            case LambdaChar:
-                updated[i][j] = LambdaChar
-            case EarthChar:
-                updated[i][j] = EarthChar
-            case WallChar:
-                updated[i][j] = WallChar
             case RockChar:
                 switch {
                 case mine.Layout[i+1][j] == EmptyChar:
@@ -348,7 +357,7 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
             mine.Robot.Waterproof, _ = strconv.Atoi(match[1])
         } else if match := findSubmatch("Trampoline\\s+([A-Z]+)\\s+targets\\s+([0-9]+)", string(line)); match != nil && len(match) == 3 {
             num, _ := strconv.Atoi(match[2])
-            mine.Trampolines[match[1]] = Target{num, Coord{-1,-1}}
+            mine.Trampolines[match[1]] = Target{num, Coord{-1,-1}, Coord{-1,-1}}
         } else {
             data = append(data, line)
         }
