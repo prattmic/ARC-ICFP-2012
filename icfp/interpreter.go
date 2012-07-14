@@ -226,6 +226,17 @@ func (mine *Mine) Update(move Coord) {
         }
     }
 
+    //Update water damage
+    if mine.Flooding != 0 {
+        if len(mine.Layout)-mine.Robot.Coord[0]<mine.Water+mine.Robot.Moves/mine.Flooding {
+            mine.Robot.Watermoves++
+        } else {
+            mine.Robot.Watermoves = 0
+	}
+	if mine.Robot.Watermoves>mine.Robot.Waterproof {
+	    mine.Robot.Dead = true
+        }
+    }
     mine.Layout = updated 
     mine.Robot.Moves++
 }
