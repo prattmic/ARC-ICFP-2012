@@ -56,6 +56,7 @@ func (mine *Mine) RemoveTramps(targ Target) {
 }
 
 func (mine *Mine) Print() {
+    fmt.Printf("Current Score: %d\n",mine.score());
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }

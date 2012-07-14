@@ -19,6 +19,7 @@ type Robot struct {
     Watermoves  int
     Lambda      int
     Dead        bool
+    Abort       bool
 }
 type Lift struct {
     Coord       Coord
@@ -95,6 +96,8 @@ func (mine *Mine) Update(move Coord) {
         updated[i] = make([]byte, len(mine.Layout[i]))
     }
 
+    //Update moves counter
+    mine.Robot.Moves++
 
     //Robot Movement
     switch {
@@ -275,8 +278,21 @@ func (mine *Mine) Update(move Coord) {
     }
 
     mine.Layout = updated 
-    mine.Robot.Moves++
 }
+
+func (mine *Mine) score() int {
+    if(mine.Robot.Dead) {
+        return 0
+    } else if(mine.Robot.Abort) {
+        return mine.Robot.Lambda*50-mine.Robot.Moves
+    } else if(mine.Complete) {
+        return mine.Robot.Lambda*75-mine.Robot.Moves
+    } else {
+        return mine.Robot.Lambda*25-mine.Robot.Moves
+    }
+    return 0
+}
+
 
 func (mine *Mine) IsFlooded(loc Coord) bool {
     if (len(mine.Layout) - loc[0]) < (mine.Water + mine.Robot.Moves/mine.Flooding) {
@@ -351,9 +367,10 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
     mine.Robot.Waterproof = 10
     mine.Robot.Lambda = 0
     mine.Robot.Dead = false
+    mine.Robot.Abort = false
     mine.Complete = false
     mine.Trampolines = make(Tramp)
-
+    
     i := 0
     for ; ; i++ {
         line, err := ReadLine(r)
