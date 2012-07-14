@@ -15,6 +15,7 @@ type Robot struct {
     Moves       int
     Watermoves  int
     Lambda      int
+    Dead        bool
 }
 type Lift struct {
     Coord       Coord
@@ -28,6 +29,7 @@ type Mine struct {
     Lift        Lift
     Water       int
     Flooding    int
+    Complete    bool
 }
 
 var RoboChar    byte = 'R'
@@ -62,17 +64,35 @@ func (mine *Mine) ParseLayout() {
 func (mine *Mine) Update(move Coord) {
     updated := make([][]byte, len(mine.Layout))
 
-    // Create new map
+    // Create new blank map
     for i := range mine.Layout {
         updated[i] = make([]byte, len(mine.Layout[i]))
     }
 
 
     //Robot Movement
+    //Get lambda
     if mine.Layout[move[0]][move[1]]==LambdaChar {   
         mine.Robot.Lambda++
     }
 
+    //Move rock
+    if mine.Layout[move[0]][move[1]] == RockChar {      
+        if mine.Robot.Coord[1]<move[1] {
+            mine.Layout[move[0]][move[1]+1] = RockChar
+	} else if mine.Robot.Coord[1]>move[1] {
+            mine.Layout[move[0]][move[1]-1] = RockChar
+	} 
+    }
+
+    //Check for completion    
+    if mine.Layout[move[0]][move[1]]==OLiftChar {
+        mine.Complete = true
+    } else {
+	mine.Complete = false
+    }
+
+    //Move the robot
     mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
     mine.Layout[move[0]][move[1]] = RoboChar
     mine.Robot.Coord = move
@@ -119,6 +139,11 @@ func (mine *Mine) Update(move Coord) {
         updated[mine.Lift.Coord[0]][mine.Lift.Coord[1]] = CLiftChar
     }
 
+    //Update survival of the robot
+    if mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] == RockChar {
+        mine.Robot.Dead = true
+    }
+
     mine.Layout = updated 
 }
 
@@ -153,6 +178,8 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
     mine.Flooding = 0
     mine.Robot.Waterproof = 10
     mine.Robot.Lambda = 0
+    mine.Robot.Dead = false
+    mine.Complete = false
 
     i := 0
     for ; ; i++ {
