@@ -28,12 +28,18 @@ type Rock struct {
     Prev        Coord
 }
 type RockSlice  []Rock
+type Target struct {
+    Num         int
+    Coord       Coord
+}
+type Tramp      map[string]Target
 type Mine struct {
     Layout      Map
     Robot       Robot
     Lambda      CoordSlice
     Rocks       RockSlice
     Lift        Lift
+    Trampolines Tramp
     Water       int
     Flooding    int
     Complete    bool
@@ -54,15 +60,19 @@ func (mine *Mine) ParseLayout() {
 
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
-            if mine.Layout[i][j] == LambdaChar {
+            switch mine.Layout[i][j] {
+            case LambdaChar:
                 mine.Lambda = append(mine.Lambda, Coord{i,j})
-            } else if mine.Layout[i][j] == RockChar {
+            case RockChar:
                 mine.Rocks = append(mine.Rocks, Rock{Coord{i,j}, Coord{i,j}})
-            } else if mine.Layout[i][j] == CLiftChar {
+            case CLiftChar:
                 mine.Lift.Coord = Coord{i,j}
                 mine.Lift.Open = false
-            } else if mine.Layout[i][j] == RoboChar {
+            case RoboChar:
                 mine.Robot.Coord = Coord{i,j}
+            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                num, _ := strconv.Atoi(string(mine.Layout[i][j]))
+                mine.TargetCoord(num, Coord{i, j})
             }
         }
     }
@@ -290,7 +300,7 @@ func (mine *Mine) ValidMove(move Coord) bool {
 
             // Can move if rock above isn't falling
             return mine.Rocks[rock].Curr[0] == mine.Rocks[rock].Prev[0];
-        case mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
+        case (move[0]-2) >= 0 && mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
             return false
         default:
             return true
@@ -318,6 +328,7 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
     mine.Robot.Lambda = 0
     mine.Robot.Dead = false
     mine.Complete = false
+    mine.Trampolines = make(Tramp)
 
     i := 0
     for ; ; i++ {
@@ -335,6 +346,9 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
             mine.Flooding, _ = strconv.Atoi(match[1])
         } else if match := findSubmatch("Waterproof\\s+([0-9]+)", string(line)); match != nil && len(match) == 2 {
             mine.Robot.Waterproof, _ = strconv.Atoi(match[1])
+        } else if match := findSubmatch("Trampoline\\s+([A-Z]+)\\s+targets\\s+([0-9]+)", string(line)); match != nil && len(match) == 3 {
+            num, _ := strconv.Atoi(match[2])
+            mine.Trampolines[match[1]] = Target{num, Coord{-1,-1}}
         } else {
             data = append(data, line)
         }

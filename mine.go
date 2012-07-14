@@ -11,7 +11,7 @@ import (
 
 func main() {
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/contest1.map", 100)
+    err := mine.FromFile("maps/trampoline1.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
@@ -23,6 +23,7 @@ func main() {
     fmt.Printf("Water: %d\n", mine.Water)
     fmt.Printf("Flooding: %d\n", mine.Flooding)
     fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
+    fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
     mine.ParseLayout()
     fmt.Printf("\nMine struct:\n%+v\n\n", mine)

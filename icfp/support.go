@@ -13,7 +13,7 @@ func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
         }
     }
 
-    return -1, errors.New("Item not found in []Coord")
+    return -1, errors.New("Item not found in CoordSlice")
 }
 
 func (rocks RockSlice) FindRock(curr Coord) (int, error) {
@@ -23,7 +23,24 @@ func (rocks RockSlice) FindRock(curr Coord) (int, error) {
         }
     }
 
-    return -1, errors.New("Item not found in []Rock")
+    return -1, errors.New("Item not found in RockSlice")
+}
+
+func (mine *Mine) TargetCoord(n int, coord Coord) error {
+    found := false
+    for key, value := range mine.Trampolines {
+        if value.Num == n {
+            found = true
+            value.Coord = coord
+            mine.Trampolines[key] = value
+        }
+    }
+
+    if found {
+        return error(nil)
+    }
+
+    return errors.New("Item not found in Trampolines")
 }
 
 func Abs(n int) int {
