@@ -228,7 +228,7 @@ func (mine *Mine) Update(move Coord) {
 
     //Update water damage
     if mine.Flooding != 0 {
-        if len(mine.Layout)-mine.Robot.Coord[0]<mine.Water+mine.Robot.Moves/mine.Flooding {
+        if mine.IsFlooded(mine.Robot.Coord) {
             mine.Robot.Watermoves++
         } else {
             mine.Robot.Watermoves = 0
@@ -239,6 +239,14 @@ func (mine *Mine) Update(move Coord) {
     }
     mine.Layout = updated 
     mine.Robot.Moves++
+}
+
+func (mine *Mine) IsFlooded(loc Coord) bool {
+    if (len(mine.Layout) - loc[0]) < (mine.Water + mine.Robot.Moves/mine.Flooding) {
+        return true
+    }
+
+    return false
 }
 
 func (mine *Mine) ValidMove(move Coord) bool {
@@ -289,10 +297,16 @@ func (mine *Mine) ValidMove(move Coord) bool {
             }
         // Rock 2 up will start falling, causing death
         } else if mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar {
+            //fmt.Println("Rock 2 up will start falling")
             return false
         } else {
             return true
         }
+    }
+
+    if mine.Flooding != 0 && mine.IsFlooded(move) && mine.Robot.Waterproof <= mine.Robot.Watermoves {
+        //fmt.Println("Drowned")
+        return false
     }
 
     //fmt.Println("Fell through if tree")
