@@ -37,7 +37,7 @@ func main() {
     }
     fmt.Printf("\nMine struct:\n%+v\n\n", mine)
 
-    serve(mine)
+    //serve(mine)
 }
 
 func serve(mine *icfp.Mine) {
