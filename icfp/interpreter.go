@@ -74,7 +74,7 @@ func (mine *Mine) ParseLayout() {
             case '0' <= mine.Layout[i][j] && mine.Layout[i][j] <= '9':
                 num, _ := strconv.Atoi(string(mine.Layout[i][j]))
                 mine.TargetCoord(num, Coord{i, j})
-            case 'A' <= mine.Layout[i][j] && mine.Layout[i][j] <= 'Z':
+            case 'A' <= mine.Layout[i][j] && mine.Layout[i][j] <= 'I':
                 targ := mine.Trampolines[string(mine.Layout[i][j])]
                 targ.TrampCoord = Coord{i,j}
                 mine.Trampolines[string(mine.Layout[i][j])] = targ
@@ -110,6 +110,10 @@ func (mine *Mine) Update(move Coord) {
 
         /* Delete it */
         mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
+
+        if len(mine.Lambda) == 0 {
+            mine.Lift.Open = true
+        }
     //Move rock
     case mine.Layout[move[0]][move[1]] == RockChar:
         switch {
@@ -139,7 +143,7 @@ func (mine *Mine) Update(move Coord) {
             updatedRockPrev = true
         }
     //Trampoline
-    case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'Z':
+    case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'I':
         trampjump = true
         targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
         mine.RemoveTramps(targ)
@@ -219,6 +223,14 @@ func (mine *Mine) Update(move Coord) {
                     }
                     mine.Rocks[rock].Curr = Coord{i+1,j-1}
                 default:
+                    rock, err := mine.Rocks.FindRock(Coord{i,j})
+                    if err != nil {
+                        fmt.Printf("Error: %s\n", err)
+                        return
+                    }
+                    if updatedRockPrev == false {
+                        mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
+                    }
                     updated[i][j] = RockChar
                 }
             }
@@ -289,7 +301,7 @@ func (mine *Mine) ValidMove(move Coord) bool {
     }
 
     switch {
-    case 'A' <= tile && tile <= 'Z':
+    case 'A' <= tile && tile <= 'I':
         return true
     case tile == RockChar:
         switch {
@@ -311,7 +323,7 @@ func (mine *Mine) ValidMove(move Coord) bool {
 
             // Can move if rock above isn't falling
             return mine.Rocks[rock].Curr[0] == mine.Rocks[rock].Prev[0];
-        case (move[0]-2) >= 0 && mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
+        case (move[0]-2) >= 0 && len(mine.Layout[move[0]-2]) > move[1] && mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
             return false
         default:
             return true

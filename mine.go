@@ -11,7 +11,7 @@ import (
 
 func main() {
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/pratttramp1.map", 100)
+    err := mine.FromFile("maps/trampoline1.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
@@ -34,28 +34,60 @@ func main() {
     fmt.Printf("Moving up allowed: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}))
 
 
-    mine.Update(icfp.Coord{2,3})
-    for i := range mine.Layout {
-        fmt.Println(string(mine.Layout[i]))
-    }
-    fmt.Printf("\nMine struct:\n%+v\n\n", mine)
+    //mine.Update(icfp.Coord{2,3})
+    //for i := range mine.Layout {
+    //    fmt.Println(string(mine.Layout[i]))
+    //}
+    //fmt.Printf("\nMine struct:\n%+v\n\n", mine)
 
-    //serve(mine)
+    serve(mine)
 }
 
 func serve(mine *icfp.Mine) {
     r := bufio.NewReaderSize(os.Stdin, 64)
     
     for char, err := r.ReadByte() ; err == nil ; char, err = r.ReadByte() {
-	switch char {
-	case 'L':
-            fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}))
-	case 'R':
-            fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}))
-	case 'U':
-            fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}))
-	case 'D':
-            fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}))
+        switch char {
+        case 'L', 'l':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}
+            if mine.ValidMove(move) {
+                mine.Update(move)
+            } else {
+                fmt.Println("Invalid move")
+            }
+            mine.Print()
+        case 'R', 'r':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}
+            if mine.ValidMove(move) {
+                mine.Update(move)
+            } else {
+                fmt.Println("Invalid move")
+            }
+            mine.Print()
+        case 'U', 'u':
+            move := icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}
+            if mine.ValidMove(move) {
+                mine.Update(move)
+            } else {
+                fmt.Println("Invalid move")
+            }
+            mine.Print()
+        case 'D', 'd':
+            move := icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}
+            if mine.ValidMove(move) {
+                mine.Update(move)
+            } else {
+                fmt.Println("Invalid move")
+            }
+            mine.Print()
+        case 'W', 'w':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
+            if mine.ValidMove(move) {
+                mine.Update(move)
+            } else {
+                fmt.Println("Invalid move")
+            }
+            mine.Print()
         }
     }
 }

@@ -53,6 +53,12 @@ func (mine *Mine) RemoveTramps(targ Target) {
     }
 }
 
+func (mine *Mine) Print() {
+    for i := range mine.Layout {
+        fmt.Println(string(mine.Layout[i]))
+    }
+}
+
 func Abs(n int) int {
     if n < 0 {
         return -n
