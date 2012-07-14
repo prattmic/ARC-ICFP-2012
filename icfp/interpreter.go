@@ -97,7 +97,8 @@ func (mine *Mine) Update(move Coord) {
 
     //Move rock
     if mine.Layout[move[0]][move[1]] == RockChar {      
-        if mine.Robot.Coord[1]<move[1] {
+        switch {
+        case mine.Robot.Coord[1]<move[1]:
             mine.Layout[move[0]][move[1]+1] = RockChar
 
             rock, err := mine.Rocks.FindRock(Coord{move[0],move[1]})
@@ -109,7 +110,7 @@ func (mine *Mine) Update(move Coord) {
             mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
             mine.Rocks[rock].Curr = Coord{move[0],move[1]+1}
             updatedRockPrev = true
-        } else if mine.Robot.Coord[1]>move[1] {
+        case mine.Robot.Coord[1]>move[1]:
             mine.Layout[move[0]][move[1]-1] = RockChar
 
             rock, err := mine.Rocks.FindRock(Coord{move[0],move[1]})
@@ -121,12 +122,13 @@ func (mine *Mine) Update(move Coord) {
             mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
             mine.Rocks[rock].Curr = Coord{move[0],move[1]-1}
             updatedRockPrev = true
-        } 
+        }
     }
 
     //Check for completion    
     if mine.Layout[move[0]][move[1]]==OLiftChar {
         mine.Complete = true
+        return
     } else {
         mine.Complete = false
     }
@@ -139,16 +141,22 @@ func (mine *Mine) Update(move Coord) {
     // Loop through and update the level
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
-            if mine.Layout[i][j] == RoboChar {
+            switch mine.Layout[i][j] {
+            case RoboChar:
                 updated[i][j] = RoboChar
-            } else if mine.Layout[i][j] == EmptyChar && updated[i][j] != RockChar{
-                updated[i][j] = EmptyChar
-            } else if mine.Layout[i][j] == LambdaChar{
+            case EmptyChar: 
+                if updated[i][j] != RockChar {
+                    updated[i][j] = EmptyChar
+                }
+            case LambdaChar:
                 updated[i][j] = LambdaChar
-            } else if mine.Layout[i][j] == EarthChar{
+            case EarthChar:
                 updated[i][j] = EarthChar
-            } else if mine.Layout[i][j] == RockChar{
-                if mine.Layout[i+1][j] == EmptyChar {
+            case WallChar:
+                updated[i][j] = WallChar
+            case RockChar:
+                switch {
+                case mine.Layout[i+1][j] == EmptyChar:
                     //Rule 1
                     updated[i][j] = EmptyChar
                     updated[i+1][j] = RockChar
@@ -163,7 +171,7 @@ func (mine *Mine) Update(move Coord) {
                         mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
                     }
                     mine.Rocks[rock].Curr = Coord{i+1,j}
-                } else if (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar && mine.Layout[i+1][j+1] == EmptyChar {
+                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar && mine.Layout[i+1][j+1] == EmptyChar:
                     //Rule 2 and 4
                     updated[i][j] = EmptyChar
                     updated[i+1][j+1] = RockChar
@@ -177,7 +185,7 @@ func (mine *Mine) Update(move Coord) {
                         mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
                     }
                     mine.Rocks[rock].Curr = Coord{i+1,j+1}
-                } else if mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar {
+                case mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar:
                     //Rule 3
                     updated[i][j] = EmptyChar
                     updated[i+1][j-1] = RockChar
@@ -191,13 +199,9 @@ func (mine *Mine) Update(move Coord) {
                         mine.Rocks[rock].Prev = mine.Rocks[rock].Curr
                     }
                     mine.Rocks[rock].Curr = Coord{i+1,j-1}
-                } else {
+                default:
                     updated[i][j] = RockChar
-                }             
-            } else if mine.Layout[i][j] == WallChar {
-                updated[i][j] = WallChar
-            } else if mine.Layout[i][j] == EarthChar {
-                updated[i][j] = EarthChar
+                }
             }
         }
     }
@@ -232,11 +236,12 @@ func (mine *Mine) Update(move Coord) {
             mine.Robot.Watermoves++
         } else {
             mine.Robot.Watermoves = 0
-	}
-	if mine.Robot.Watermoves>mine.Robot.Waterproof {
-	    mine.Robot.Dead = true
+        }
+        if mine.Robot.Watermoves>mine.Robot.Waterproof {
+            mine.Robot.Dead = true
         }
     }
+
     mine.Layout = updated 
     mine.Robot.Moves++
 }
