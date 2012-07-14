@@ -31,7 +31,7 @@ func main() {
     fmt.Printf("Moving down is: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}))
 
 
-    mine.Update(icfp.Coord{2,3})
+    mine.Update(icfp.Coord{1,3})
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }
