@@ -5,6 +5,7 @@ import (
         "bufio"
         "strconv"
         "regexp"
+        "fmt"
 )
 
 type Map        [][]byte
@@ -71,6 +72,16 @@ func (mine *Mine) Update(move Coord) {
     //Robot Movement
     if mine.Layout[move[0]][move[1]]==LambdaChar {   
         mine.Robot.Lambda++
+
+        /* Get index in list */
+        coordi, err := IndexCoord(mine.Lambda, Coord{move[0], move[1]})
+        if err != nil {
+            fmt.Printf("Error: %s\n", err)
+            return
+        }
+
+        /* Delete it */
+        mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
     }
 
     mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar

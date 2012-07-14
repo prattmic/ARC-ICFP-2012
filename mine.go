@@ -11,7 +11,7 @@ import (
 
 func main() {
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/contest1.map", 100)
+    err := mine.FromFile("maps/contest4.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
@@ -31,10 +31,11 @@ func main() {
     fmt.Printf("Moving down is: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}))
 
 
-    mine.Update(icfp.Coord{2,4})
+    mine.Update(icfp.Coord{4,2})
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }
+    fmt.Printf("\nMine struct:\n%+v\n\n", mine)
 
     serve(mine)
 }
