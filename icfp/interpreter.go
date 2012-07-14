@@ -170,10 +170,28 @@ func (mine *Mine) ValidMove(move Coord) bool {
     x := Abs(mine.Robot.Coord[1]-move[1])
     tile := mine.Layout[move[0]][move[1]]
 
+    // -1 = Left 0 = No horz 1 = Right
+    horz := move[1] - mine.Robot.Coord[1]
+
     if x != 0 && y != 0 {
         return false
     } else if x > 1 || y > 1 {
         return false
+    } else if tile == RockChar {
+        // NOTE: If empty space below rock, you cannot move horizontally into its space unless you can push it
+        // Push left
+        } else if horz == -1 {
+            if mine.Layout[move[0]][move[1]-1] == EmptyChar {
+                return true
+            }
+        // Push right
+        } else if horz == 1 {
+            if mine.Layout[move[0]][move[1]+1] == EmptyChar {
+                return true
+            }
+        } else {
+            return false
+        }
     } else if tile == EmptyChar || tile == EarthChar || tile == LambdaChar || tile == OLiftChar {
         return true
     }
