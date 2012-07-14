@@ -288,8 +288,10 @@ func (mine *Mine) ValidMove(move Coord) bool {
         return false
     }
 
-    switch tile {
-    case RockChar:
+    switch {
+    case 'A' <= tile && tile <= 'Z':
+        return true
+    case tile == RockChar:
         switch {
         case horz == -1 && mine.Layout[move[0]][move[1]-1] == EmptyChar:    // Pushable Rock
             return true
@@ -298,7 +300,7 @@ func (mine *Mine) ValidMove(move Coord) bool {
         default:
             return false
         }
-    case EmptyChar, EarthChar, LambdaChar, OLiftChar:
+    case tile == EmptyChar, tile == EarthChar, tile == LambdaChar, tile == OLiftChar:
         switch {
         case mine.Layout[move[0]-1][move[1]] == RockChar:                   // Rock above space
             rock, err := mine.Rocks.FindRock(Coord{move[0]-1,move[1]})
