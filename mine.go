@@ -42,7 +42,7 @@ var OLiftChar   byte = 'O'
 
 func main() {
     mine := new(Mine)
-    err := mine.FromFile("maps/contest1.map", 100)
+    err := mine.FromFile("maps/test.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
@@ -95,36 +95,64 @@ func (mine *Mine) ParseLayout() {
 func (mine *Mine) update(move Coord) {
     updated := make([][]byte, len(mine.layout))
 
-    mine.robot.coord = move
+    // Create new map
     for i := range mine.layout {
         updated[i] = make([]byte, len(mine.layout[i]))
-	
+    }
+
+
+    //Robot Movement
+    if mine.layout[move[0]][move[1]]==LambdaChar {   
+        mine.robot.lambda++
+    }
+
+    mine.layout[mine.robot.coord[0]][mine.robot.coord[1]] = EmptyChar
+    mine.layout[move[0]][move[1]] = RoboChar
+    mine.robot.coord = move
+
+    // Loop through and update the level
+    for i := range mine.layout {
         for j := range mine.layout[i] {
-            if i==move[0] && j==move[1] {
-		updated[i][j] = RoboChar
-                mine.robot.lambda++
-            } else if mine.layout[i][j] == RoboChar && (i==move[0] || j==move[1]) {
-                updated[i][j] = EmptyChar
-            } else if mine.layout[i][j] == EmptyChar{
+            if mine.layout[i][j] == RoboChar {
+                updated[i][j] = RoboChar
+            } else if mine.layout[i][j] == EmptyChar && updated[i][j] != RockChar{
 		updated[i][j] = EmptyChar
             } else if mine.layout[i][j] == LambdaChar{
                 updated[i][j] = LambdaChar
             } else if mine.layout[i][j] == EarthChar{
                 updated[i][j] = EarthChar
             } else if mine.layout[i][j] == RockChar{
-                //Rock logic goes here                
-                updated[i][j] = RockChar
+                
+                if mine.layout[i+1][j] == EmptyChar {
+                    //Rule 1
+                    updated[i][j] = EmptyChar
+                    updated[i+1][j] = RockChar
+                } else if (mine.layout[i+1][j] == RockChar || mine.layout[i+1][j] == LambdaChar) && mine.layout[i][j+1] == EmptyChar && mine.layout[i+1][j+1] == EmptyChar {
+                    //Rule 2 and 4
+                    updated[i][j] = EmptyChar
+                    updated[i+1][j+1] = RockChar
+                } else if mine.layout[i+1][j] == RockChar && mine.layout[i][j-1] == EmptyChar && mine.layout[i+1][j-1] == EmptyChar {
+                    //Rule 3
+                    updated[i][j] = EmptyChar
+                    updated[i+1][j-1] = RockChar
+                } else {
+                    updated[i][j] = RockChar
+                }             
             } else if mine.layout[i][j] == WallChar {
                 updated[i][j] = WallChar
-            } else if mine.layout[i][j] == OLiftChar {
-                updated[i][j] = OLiftChar
-            } else if mine.layout[i][j] == CLiftChar {
-                updated[i][j] = CLiftChar
             } else if mine.layout[i][j] == EarthChar {
                 updated[i][j] = EarthChar
             }
         }
     }
+
+    // Update State of the lift gate
+    if mine.lift.open {
+        updated[mine.lift.coord[0]][mine.lift.coord[1]] = OLiftChar
+    } else {
+        updated[mine.lift.coord[0]][mine.lift.coord[1]] = CLiftChar
+    }
+
     mine.layout = updated 
 }
 
