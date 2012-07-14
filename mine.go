@@ -11,7 +11,7 @@ import (
 
 func main() {
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/trampoline1.map", 100)
+    err := mine.FromFile("maps/contest1.map", 100)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)

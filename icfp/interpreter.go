@@ -2,6 +2,7 @@ package icfp
 
 import (
         "os"
+        "io"
         "bufio"
         "strconv"
         "regexp"
@@ -355,9 +356,11 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
 
     i := 0
     for ; ; i++ {
-        line, _, err := r.ReadLine()
-        if err != nil {
+        line, err := ReadLine(r)
+        if err == io.EOF {
             break
+        } else if err != nil {
+            fmt.Printf("Error: %s\n", err)
         }
 
         // Blank

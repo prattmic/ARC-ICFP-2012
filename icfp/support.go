@@ -4,6 +4,8 @@ import (
         "regexp"
         "fmt"
         "errors"
+        "bufio"
+        "io"
 )
 
 func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
@@ -57,6 +59,29 @@ func (mine *Mine) Print() {
     for i := range mine.Layout {
         fmt.Println(string(mine.Layout[i]))
     }
+}
+
+// Inspired by Alex Ray
+func ReadLine(r *bufio.Reader) ([]byte, error) {
+    l := make([]byte, 0, 4096)
+    
+    for {
+        line, isPrefix, err := r.ReadLine()
+
+        if err != nil && err != io.EOF {
+            return nil, err
+        }
+
+        l = append(l, line...)
+
+        if err == io.EOF {
+            return l, err
+        }
+        if !isPrefix {
+            break
+        }
+    }
+    return l, nil
 }
 
 func Abs(n int) int {
