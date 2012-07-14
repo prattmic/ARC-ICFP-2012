@@ -45,21 +45,16 @@ func main() {
 func serve(mine *icfp.Mine) {
     r := bufio.NewReaderSize(os.Stdin, 64)
     
-    var err error = nil
-
-    for err == nil {
-        char, err := r.ReadByte()
-
-        if char == 'L' {
+    for char, err := r.ReadByte() ; err == nil ; char, err = r.ReadByte() {
+	switch char {
+	case 'L':
             fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}))
-        } else if char == 'R' {
+	case 'R':
             fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}))
-        } else if char == 'U' {
+	case 'U':
             fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}))
-        } else if char == 'D' {
+	case 'D':
             fmt.Println(mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}))
         }
-
-        _ = err
     }
 }
