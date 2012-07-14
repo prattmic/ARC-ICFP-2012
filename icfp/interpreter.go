@@ -14,6 +14,7 @@ type Robot struct {
     Waterproof  int
     Moves       int
     Watermoves  int
+    Lambda      int
 }
 type Lift struct {
     Coord       Coord
@@ -58,6 +59,42 @@ func (mine *Mine) ParseLayout() {
     }
 }
 
+func (mine *Mine) Update(move Coord) {
+    updated := make([][]byte, len(mine.Layout))
+
+    mine.Robot.Coord = move
+    for i := range mine.Layout {
+        updated[i] = make([]byte, len(mine.Layout[i]))
+	
+        for j := range mine.Layout[i] {
+            if i==move[0] && j==move[1] {
+                updated[i][j] = RoboChar
+                mine.Robot.Lambda++
+            } else if mine.Layout[i][j] == RoboChar && (i==move[0] || j==move[1]) {
+                updated[i][j] = EmptyChar
+            } else if mine.Layout[i][j] == EmptyChar{
+		updated[i][j] = EmptyChar
+            } else if mine.Layout[i][j] == LambdaChar{
+                updated[i][j] = LambdaChar
+            } else if mine.Layout[i][j] == EarthChar{
+                updated[i][j] = EarthChar
+            } else if mine.Layout[i][j] == RockChar{
+                //Rock logic goes here                
+                updated[i][j] = RockChar
+            } else if mine.Layout[i][j] == WallChar {
+                updated[i][j] = WallChar
+            } else if mine.Layout[i][j] == OLiftChar {
+                updated[i][j] = OLiftChar
+            } else if mine.Layout[i][j] == CLiftChar {
+                updated[i][j] = CLiftChar
+            } else if mine.Layout[i][j] == EarthChar {
+                updated[i][j] = EarthChar
+            }
+        }
+    }
+    mine.Layout = updated 
+}
+
 func (mine *Mine) ValidMove(move Coord) bool {
     y := Abs(mine.Robot.Coord[0]-move[0])
     x := Abs(mine.Robot.Coord[1]-move[1])
@@ -88,6 +125,7 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
     mine.Water = 0
     mine.Flooding = 0
     mine.Robot.Waterproof = 10
+    mine.Robot.Lambda = 0
 
     i := 0
     for ; ; i++ {

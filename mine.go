@@ -41,43 +41,6 @@ func main() {
     serve(mine)
 }
 
-
-func (mine *Mine) Update(move Coord) {
-    updated := make([][]byte, len(mine.Layout))
-
-    mine.Robot.Coord = move
-    for i := range mine.Layout {
-        updated[i] = make([]byte, len(mine.Layout[i]))
-	
-        for j := range mine.Layout[i] {
-            if i==move[0] && j==move[1] {
-                updated[i][j] = RoboChar
-                mine.Robot.Lambda++
-            } else if mine.Layout[i][j] == RoboChar && (i==move[0] || j==move[1]) {
-                updated[i][j] = EmptyChar
-            } else if mine.Layout[i][j] == EmptyChar{
-		updated[i][j] = EmptyChar
-            } else if mine.Layout[i][j] == LambdaChar{
-                updated[i][j] = LambdaChar
-            } else if mine.Layout[i][j] == EarthChar{
-                updated[i][j] = EarthChar
-            } else if mine.layout[i][j] == RockChar{
-                //Rock logic goes here                
-                updated[i][j] = RockChar
-            } else if mine.Layout[i][j] == WallChar {
-                updated[i][j] = WallChar
-            } else if mine.Layout[i][j] == OLiftChar {
-                updated[i][j] = OLiftChar
-            } else if mine.Layout[i][j] == CLiftChar {
-                updated[i][j] = CLiftChar
-            } else if mine.Layout[i][j] == EarthChar {
-                updated[i][j] = EarthChar
-            }
-        }
-    }
-    mine.Layout = updated 
-}
-
 func serve(mine *icfp.Mine) {
     r := bufio.NewReaderSize(os.Stdin, 64)
     
