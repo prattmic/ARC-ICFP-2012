@@ -215,14 +215,14 @@ func (mine *Mine) Update(move Coord) {
     }
 
     //Update water damage
-    mine.Flooding = 2
-    mine.Water = 1
-    fmt.Printf("HERE\n")
     if mine.Flooding != 0 {
-        fmt.Printf("Water level %d\n", mine.Water+mine.Robot.Moves/mine.Flooding)
         if len(mine.Layout)-mine.Robot.Coord[0]<mine.Water+mine.Robot.Moves/mine.Flooding {
             mine.Robot.Watermoves++
-            fmt.Printf("Waterdamage+\n")
+        } else {
+            mine.Robot.Watermoves = 0
+	}
+	if mine.Robot.Watermoves>mine.Robot.Waterproof {
+	    mine.Robot.Dead = true
         }
     }
     mine.Layout = updated 
