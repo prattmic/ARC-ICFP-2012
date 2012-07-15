@@ -7,6 +7,19 @@ import (
         "container/list"
 )
 
+const (
+    C   int = 1
+    D   int = 1
+    E   int = 1
+    F   int = 1
+)
+
+type AStar struct {
+    Mine    *icfp.Mine
+    D       int
+    H       int
+    E       *list.Element
+}
 func usage() {
     fmt.Fprintf(os.Stderr, "usage: %s [mapfile]\n", os.Args[0])
     os.Exit(2)
@@ -18,7 +31,7 @@ func main() {
     }
 
     fmt.Println("********************");
-    fmt.Println("* Solver 1         *");
+    fmt.Println("* Solver 2         *");
     fmt.Println("********************");
 
     mine := new(icfp.Mine)
@@ -39,84 +52,82 @@ func main() {
     fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
     mapQ := list.New()
-    mapQ.PushBack(mine)
+    bestSol := new(AStar)
+    bestSol.Mine = mine
+    bestSol.D = bestSol.GetD()
+    bestSol.H = bestSol.GetH()
+
+    bestSol.E = mapQ.PushBack(bestSol)
+    //mapQ.Remove(bestSol.E)
+    fmt.Printf("Length: %d\n",mapQ.Len())
 
     options := []byte{'U','D','L','R'}
 
-    var solved = false
     var counter = 0
+    var Solved = false
 
-    for i:=1;i<20;i++ {
-        for e:= mapQ.Front(); e!= nil; {
-            tmpMine ,ok := e.Value.(*icfp.Mine)
+    for i:=1;i<500000;i++ {
+        //Select Best Map
+        tmpSol, ok := mapQ.Front().Value.(*AStar)
+        if ok {
+            bestSol = tmpSol
+        }
+
+        for e:= mapQ.Front().Next(); e!= nil; e=e.Next() {
+            tmpSol ,ok := e.Value.(*AStar)
             if ok {
-                for j:=0;j<4;j++ {
-                    newMine := tmpMine.Copy()
-                    if move(newMine,options[j]) && !newMine.Robot.Dead {
-                        counter++
-                        mapQ.PushBack(newMine)
-                        //fmt.Printf("%+v\n",newMine.Lambda)
-                        if newMine.Complete {//|| newMine.Robot.Lambda >= 4{
-                            solved = true
-                            goto solved
-                        }
-                    }
+                if tmpSol.H+tmpSol.D<=bestSol.H+bestSol.D {
+                    bestSol = tmpSol
+                    //mapQ.Remove(bestSol.E)
                 }
-                e = e.Next();
-                if e!=nil {
-                    mapQ.Remove(e.Prev())
+            }
+        }
+        //bestSol.Mine.Print() 
+        //fmt.Printf("Moves: %s\n",bestSol.Mine.Command)
+
+        //fmt.Printf("Length: %d\n",mapQ.Len())
+        // make children of Best map
+        mapQ.Remove(bestSol.E)
+        //fmt.Printf("Length: %d\n",mapQ.Len())
+
+        for j:=0;j<4;j++ {
+            newMine := bestSol.Mine.Copy()
+            if move(newMine,options[j]) && !newMine.Robot.Dead {
+                counter++
+                //Create new sol
+                tmpSol := new(AStar)
+                tmpSol.Mine = newMine
+                tmpSol.D = tmpSol.GetD()
+                tmpSol.H = tmpSol.GetH()
+
+                //tmpSol.Mine.Print()
+                tmpSol.E = mapQ.PushFront(tmpSol)
+                //fmt.Printf("%+v\n",newMine.Lambda)
+                if newMine.Complete {// || newMine.Robot.Lambda >= 3{
+                    bestSol = tmpSol
+                    Solved = true
+                    goto solved
                 }
             }
         }
     }
 
 solved:
-    if solved {
-        tmpMine, ok := mapQ.Back().Value.(*icfp.Mine)
-        if ok {
-            //move(tmpMine,'A')
-            tmpMine.Print()
-            fmt.Printf("%s\n",tmpMine.Command)
-            fmt.Printf("Score: %d\n",tmpMine.Score())
+        if Solved {
+            bestSol.Mine.Print()
+            fmt.Printf("%s\n",bestSol.Mine.Command)
+            fmt.Printf("Score: %d\n",bestSol.Mine.Score())
             fmt.Printf("Counter: %d\n",counter)
+        } else {
+            fmt.Println("No solution found")
         }
-    }
-/*
-        for e:= mapQ.Front(); e!= nil; e=e.Next() {
-            tmpMine ,ok := e.Value.(*icfp.Mine)
-            if ok {
-                tmpMine.Print()
-                }
-            }
-  */      
-    /*
-    mine.Print()
-    move(mine,'D')
-    mine.Print()
+}
+func (sol *AStar) GetH() int {
+    return len(sol.Mine.Lambda)*C+0*D
+}
 
-    newMine := mine.Copy()
-    move(newMine,'U')
-    newMine.Print()
-
-    move(mine,'L')
-    mine.Print()
-
-    //Illegal move
-    if(!move(mine,'U')) {
-        fmt.Println("Illegal move")
-    } else {
-    mine.Print()
-    }
-
-    move(mine,'R')
-    mine.Print()
-    move(mine,'D')
-    mine.Print()
-    move(mine,'D')
-    mine.Print()
-    fmt.Printf("%+v\n",mine)
-    fmt.Printf("%+v\n",newMine)
-    */
+func (sol *AStar) GetD() int {
+    return sol.Mine.Robot.Moves*E-sol.Mine.Robot.Lambda*F
 }
 
 func move(mine *icfp.Mine, command byte) bool {
