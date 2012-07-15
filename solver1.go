@@ -36,6 +36,14 @@ func main() {
 
     move(mine,'L')
     mine.Print()
+
+    //Illegal move
+    if(!move(mine,'U')) {
+        fmt.Println("Illegal move")
+    } else {
+    mine.Print()
+    }
+
     move(mine,'R')
     mine.Print()
     move(mine,'D')
