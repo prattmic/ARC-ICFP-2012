@@ -30,6 +30,7 @@ func main() {
 
     //Load map data
     mine.ParseLayout()
+    mine.Print()
 
     //Print initial stats
     fmt.Printf("Water: %d\n", mine.Water)
@@ -46,12 +47,12 @@ func main() {
     var counter = 0
 
     for i:=1;i<20;i++ {
-        for e:= mapQ.Front(); e!= nil; e=e.Next() {
+        for e:= mapQ.Front(); e!= nil; {
             tmpMine ,ok := e.Value.(*icfp.Mine)
             if ok {
                 for j:=0;j<4;j++ {
                     newMine := tmpMine.Copy()
-                    if move(newMine,options[j]) {
+                    if move(newMine,options[j]) && !newMine.Robot.Dead {
                         counter++
                         mapQ.PushBack(newMine)
                         //fmt.Printf("%+v\n",newMine.Lambda)
@@ -60,6 +61,10 @@ func main() {
                             goto solved
                         }
                     }
+                }
+                e = e.Next();
+                if e!=nil {
+                    mapQ.Remove(e.Prev())
                 }
             }
         }
