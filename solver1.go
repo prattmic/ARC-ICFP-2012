@@ -51,8 +51,8 @@ func main() {
             if ok {
                 for j:=0;j<4;j++ {
                     newMine := tmpMine.Copy()
-                    counter++
                     if move(newMine,options[j]) {
+                        counter++
                         mapQ.PushBack(newMine)
                         //fmt.Printf("%+v\n",newMine.Lambda)
                         if newMine.Complete {//|| newMine.Robot.Lambda >= 4{
