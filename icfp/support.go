@@ -27,6 +27,15 @@ func (mine *Mine) Copy() *Mine {
         copy(newSlice,mine.Layout[i])
         tmp.Layout[i] = newSlice
     }
+    newSlice := make(CoordSlice, len(mine.Lambda))
+    copy(newSlice,mine.Lambda)
+    tmp.Lambda = newSlice
+
+    newSlice2 := make([]byte, len(mine.Command))
+    copy(newSlice2,mine.Command)
+    tmp.Command = newSlice2
+
+
 
     return tmp
 

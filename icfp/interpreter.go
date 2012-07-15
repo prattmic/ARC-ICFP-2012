@@ -33,6 +33,7 @@ type Target struct {
 }
 type Tramp      map[string]Target
 type Mine struct {
+    Command     []byte
     Layout      Map
     Robot       Robot
     Lambda      CoordSlice
@@ -65,6 +66,7 @@ func (mine *Mine) Init() {
     mine.Robot.Abort = false
     mine.Complete = false
     mine.Trampolines = make(Tramp)
+    mine.Command = make([]byte,0,100)
     mine.Growth = 25 - 1
     mine.Robot.Razors = 0
 }
@@ -94,8 +96,12 @@ func (mine *Mine) ParseLayout() {
     }
 }
 
-func (mine *Mine) Update(move Coord, trim bool) {
+func (mine *Mine) Update(move Coord, command byte) {
     var trampjump = false
+
+    mine.Command = append(mine.Command,command)
+
+    trim := command=='S'||command=='s'
 
     updated := make([][]byte, len(mine.Layout))
 
