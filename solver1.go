@@ -3,6 +3,7 @@ package main
 import (
         "./icfp"
         "fmt"
+        "container/list"
 )
 
 func main() {
@@ -26,6 +27,54 @@ func main() {
     fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
     fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
+    mapQ := list.New()
+    mapQ.PushBack(mine)
+
+    options := []byte{'U','D','L','R'}
+
+    var solved = false;
+
+    for i:=1;i<20;i++ {
+        for e:= mapQ.Front(); e!= nil; e=e.Next() {
+            tmpMine ,ok := e.Value.(*icfp.Mine)
+            if ok {
+                for j:=0;j<4;j++ {
+                    newMine := tmpMine.Copy()
+                    if move(newMine,options[j]) {
+                        mapQ.PushFront(newMine)
+              //          fmt.Printf("%+v\n",newMine)
+                        if newMine.Complete {
+                            solved = true
+                        }
+                    }
+                    if solved {
+                        break
+                    }
+                }
+            }
+            if solved {
+                break
+            }
+        }
+        if solved {
+            break
+        }
+    }
+    if solved {
+        tmpMine, ok := mapQ.Front().Value.(*icfp.Mine)
+        if ok {
+            tmpMine.Print()
+        }
+    }
+/*
+        for e:= mapQ.Front(); e!= nil; e=e.Next() {
+            tmpMine ,ok := e.Value.(*icfp.Mine)
+            if ok {
+                tmpMine.Print()
+                }
+            }
+  */      
+    /*
     mine.Print()
     move(mine,'D')
     mine.Print()
@@ -52,6 +101,7 @@ func main() {
     mine.Print()
     fmt.Printf("%+v\n",mine)
     fmt.Printf("%+v\n",newMine)
+    */
 }
 
 func move(mine *icfp.Mine, move byte) bool {

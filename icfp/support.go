@@ -26,7 +26,6 @@ func (mine *Mine) Copy() *Mine {
         newSlice := make([]byte, len(mine.Layout[i]))
         copy(newSlice,mine.Layout[i])
         tmp.Layout[i] = newSlice
-        fmt.Println(tmp.Layout[i])
     }
 
     return tmp
