@@ -110,32 +110,14 @@ func (mine *Mine) Update(move Coord, trim bool) {
     //Trim beards
     if trim {
         if mine.Robot.Razors > 0 {
-            i := mine.Robot.Coord[0]
-            j := mine.Robot.Coord[1]
             mine.Robot.Razors--
-            if mine.Layout[i+1][j-1] == BeardChar {
-                mine.Layout[i+1][j-1] = EmptyChar
-            }
-            if mine.Layout[i+1][j] == BeardChar {
-                mine.Layout[i+1][j] = EmptyChar
-            }
-            if mine.Layout[i+1][j+1] == BeardChar {
-                mine.Layout[i+1][j+1] = EmptyChar
-            }
-            if mine.Layout[i][j-1] == BeardChar {
-                mine.Layout[i][j-1] = EmptyChar
-            }
-            if mine.Layout[i][j+1] == BeardChar {
-                mine.Layout[i][j+1] = EmptyChar
-            }
-            if mine.Layout[i-1][j-1] == BeardChar {
-                mine.Layout[i-1][j-1] = EmptyChar
-            }
-            if mine.Layout[i-1][j] == BeardChar {
-                mine.Layout[i-1][j] = EmptyChar
-            }
-            if mine.Layout[i-1][j+1] == BeardChar {
-                mine.Layout[i-1][j+1] = EmptyChar
+
+            for i := mine.Robot.Coord[0]-1; i <= mine.Robot.Coord[0]+1; i++ {
+                for j := mine.Robot.Coord[1]-1; j <= mine.Robot.Coord[1]+1; j++ {
+                    if mine.Layout[i][j] == BeardChar {
+                        mine.Layout[i][j] = EmptyChar
+                    }
+                }
             }
         }
     }
@@ -210,43 +192,26 @@ func (mine *Mine) Update(move Coord, trim bool) {
             case BeardChar:
                 updated[i][j] = mine.Layout[i][j]
                 if mine.Gcount == 0 {
-                    if updated[i+1][j-1] == EmptyChar {
-                        updated[i+1][j-1] = BeardChar
-                    }
-                    if updated[i+1][j] == EmptyChar {
-                        updated[i+1][j] = BeardChar
-                    }
-                    if updated[i+1][j+1] == EmptyChar {
-                        updated[i+1][j+1] = BeardChar
-                    }
-                    if updated[i][j-1] == EmptyChar {
-                        updated[i][j-1] = BeardChar
-                    }
-                    if mine.Layout[i][j+1] == EmptyChar {
-                        updated[i][j+1] = BeardChar
-                    }
-                    if mine.Layout[i-1][j-1] == EmptyChar {
-                        updated[i-1][j-1] = BeardChar
-                    }
-                    if mine.Layout[i-1][j] == EmptyChar {
-                        updated[i-1][j] = BeardChar
-                    }
-                    if mine.Layout[i-1][j+1] == EmptyChar {
-                        updated[i-1][j+1] = BeardChar
+                    for k := i-1; k <= i+1; k++ {
+                        for l := j-1; l <= j+1; l++ {
+                            if mine.Layout[k][l] == EmptyChar {
+                                updated[k][l] = BeardChar
+                            }
+                        }
                     }
                 }
             case RockChar:
                 switch {
-                case mine.Layout[i+1][j] == EmptyChar && updated[i+1][j] != BeardChar:
+                case mine.Layout[i+1][j] == EmptyChar:
                     //Rule 1
                     updated[i][j] = EmptyChar
                     updated[i+1][j] = RockChar
 
-                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && updated[i+1][j] != BeardChar && mine.Layout[i][j+1] == EmptyChar && updated[i][j+1] != BeardChar && mine.Layout[i+1][j+1] == EmptyChar && updated[i+1][j+1] != BeardChar:
+                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar &&  mine.Layout[i+1][j+1] == EmptyChar:
                     //Rule 2 and 4
                     updated[i][j] = EmptyChar
                     updated[i+1][j+1] = RockChar
-                case mine.Layout[i+1][j] == RockChar && updated[i+1][j] != BeardChar && mine.Layout[i][j-1] == EmptyChar && updated[i][j-1] != BeardChar && mine.Layout[i+1][j-1] == EmptyChar && updated[i+1][j-1] != BeardChar:
+                case mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar:
                     //Rule 3
                     updated[i][j] = EmptyChar
                     updated[i+1][j-1] = RockChar
