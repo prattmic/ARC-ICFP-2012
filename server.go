@@ -7,9 +7,18 @@ import (
         "./icfp"
 )
 
+func usage() {
+    fmt.Fprintf(os.Stderr, "usage: %s [mapfile]\n", os.Args[0])
+    os.Exit(2)
+}
+
 func main() {
+    if len(os.Args) != 2 {
+        usage()
+    }
+
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/beard1_test.map", 100, true)
+    err := mine.FromFile(os.Args[1], 100, true)
 
     if err != nil {
         fmt.Printf("Error: %s\n", err)
