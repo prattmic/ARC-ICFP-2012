@@ -8,10 +8,10 @@ import (
 )
 
 const (
-    C   int = 1
+    C   int = 3
     D   int = 1
     E   int = 1
-    F   int = 1
+    F   int = 2
 )
 
 type AStar struct {
@@ -58,11 +58,10 @@ func main() {
     bestSol.H = bestSol.GetH()
 
     bestSol.E = mapQ.PushBack(bestSol)
-    //mapQ.Remove(bestSol.E)
-    fmt.Printf("Length: %d\n",mapQ.Len())
 
     options := []byte{'U','D','L','R'}
 
+    fmt.Printf("Distance to lift %d\n",bestSol.Mine.LiftDist())
     var counter = 0
     var Solved = false
 
@@ -123,7 +122,7 @@ solved:
         }
 }
 func (sol *AStar) GetH() int {
-    return len(sol.Mine.Lambda)*C+0*D
+    return len(sol.Mine.Lambda)*C+sol.Mine.LiftDist()*D
 }
 
 func (sol *AStar) GetD() int {
