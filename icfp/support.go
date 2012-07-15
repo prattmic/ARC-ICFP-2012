@@ -17,6 +17,21 @@ func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
 
     return -1, errors.New("Item not found in CoordSlice")
 }
+func (mine *Mine) Copy() *Mine {
+    tmp := new(Mine)
+    *tmp = *mine
+
+    tmp.Layout= make([][]byte, len(mine.Layout))
+    for i := range mine.Layout {
+        newSlice := make([]byte, len(mine.Layout[i]))
+        copy(newSlice,mine.Layout[i])
+        tmp.Layout[i] = newSlice
+        fmt.Println(tmp.Layout[i])
+    }
+
+    return tmp
+
+}
 func (mine *Mine) TargetCoord(n int, coord Coord) error {
     found := false
     for key, value := range mine.Trampolines {

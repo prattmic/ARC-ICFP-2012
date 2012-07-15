@@ -29,6 +29,11 @@ func main() {
     mine.Print()
     move(mine,'D')
     mine.Print()
+
+    newMine := mine.Copy()
+    move(newMine,'U')
+    newMine.Print()
+
     move(mine,'L')
     mine.Print()
     move(mine,'R')
@@ -37,6 +42,8 @@ func main() {
     mine.Print()
     move(mine,'D')
     mine.Print()
+    fmt.Printf("%+v\n",mine)
+    fmt.Printf("%+v\n",newMine)
 }
 
 func move(mine *icfp.Mine, move byte) bool {
