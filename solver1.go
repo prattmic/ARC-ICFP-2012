@@ -57,21 +57,15 @@ func main() {
                         //fmt.Printf("%+v\n",newMine.Lambda)
                         if newMine.Complete || newMine.Robot.Lambda >= 4{
                             solved = true
+                            goto solved
                         }
-                    }
-                    if solved {
-                        break
                     }
                 }
             }
-            if solved {
-                break
-            }
-        }
-        if solved {
-            break
         }
     }
+
+solved:
     if solved {
         tmpMine, ok := mapQ.Front().Value.(*icfp.Mine)
         if ok {
