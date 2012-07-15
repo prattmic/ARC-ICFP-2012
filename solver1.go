@@ -50,8 +50,8 @@ func move(mine *icfp.Mine, move byte) bool {
         switch move{
         case 'L', 'l':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}
-            if mine.ValidMove(move) {
-                mine.Update(move)
+            if mine.ValidMove(move, false) {
+                mine.Update(move, false)
                 return true
             } else {
                 return false
@@ -59,8 +59,8 @@ func move(mine *icfp.Mine, move byte) bool {
             return false
         case 'R', 'r':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}
-            if mine.ValidMove(move) {
-                mine.Update(move)
+            if mine.ValidMove(move, false) {
+                mine.Update(move, false)
                 return true
             } else {
                 return false
@@ -68,8 +68,8 @@ func move(mine *icfp.Mine, move byte) bool {
             return false
         case 'U', 'u':
             move := icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}
-            if mine.ValidMove(move) {
-                mine.Update(move)
+            if mine.ValidMove(move, false) {
+                mine.Update(move, false)
                 return true
             } else {
                 return false
@@ -77,8 +77,8 @@ func move(mine *icfp.Mine, move byte) bool {
             return false
         case 'D', 'd':
             move := icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}
-            if mine.ValidMove(move) {
-                mine.Update(move)
+            if mine.ValidMove(move, false) {
+                mine.Update(move, false)
                 return true
             } else {
                 return false
@@ -86,8 +86,17 @@ func move(mine *icfp.Mine, move byte) bool {
             return false
         case 'W', 'w':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
-            if mine.ValidMove(move) {
-                mine.Update(move)
+            if mine.ValidMove(move, false) {
+                mine.Update(move, false)
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'S', 's':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
+            if mine.ValidMove(move, true) {
+                mine.Update(move, true)
                 return true
             } else {
                 return false

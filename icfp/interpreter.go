@@ -18,6 +18,7 @@ type Robot struct {
     Moves       int
     Watermoves  int
     Lambda      int
+    Razors      int
     Dead        bool
     Abort       bool
 }
@@ -39,6 +40,8 @@ type Mine struct {
     Trampolines Tramp
     Water       int
     Flooding    int
+    Growth      int
+    Gcount      int
     Complete    bool
 }
 
@@ -50,6 +53,21 @@ var EarthChar   byte = '.'
 var EmptyChar   byte = ' '
 var CLiftChar   byte = 'L'
 var OLiftChar   byte = 'O'
+var BeardChar   byte = 'W'
+var RazorChar   byte = '!'
+
+func (mine *Mine) Init() {
+    mine.Water = 0
+    mine.Flooding = 0
+    mine.Robot.Waterproof = 10
+    mine.Robot.Lambda = 0
+    mine.Robot.Dead = false
+    mine.Robot.Abort = false
+    mine.Complete = false
+    mine.Trampolines = make(Tramp)
+    mine.Growth = 25 - 1
+    mine.Robot.Razors = 0
+}
 
 func (mine *Mine) ParseLayout() {
     mine.Lambda = make([]Coord, 0, 100)
@@ -59,8 +77,6 @@ func (mine *Mine) ParseLayout() {
             switch {
             case mine.Layout[i][j] == LambdaChar:
                 mine.Lambda = append(mine.Lambda, Coord{i,j})
-            case mine.Layout[i][j] == RockChar:
-                //mine.Rocks = append(mine.Rocks, Rock{Coord{i,j}, Coord{i,j}})
             case mine.Layout[i][j] == CLiftChar:
                 mine.Lift.Coord = Coord{i,j}
                 mine.Lift.Open = false
@@ -78,7 +94,7 @@ func (mine *Mine) ParseLayout() {
     }
 }
 
-func (mine *Mine) Update(move Coord) {
+func (mine *Mine) Update(move Coord, trim bool) {
     var trampjump = false
 
     updated := make([][]byte, len(mine.Layout))
@@ -90,6 +106,39 @@ func (mine *Mine) Update(move Coord) {
 
     //Update moves counter
     mine.Robot.Moves++
+
+    //Trim beards
+    if trim {
+        if mine.Robot.Razors > 0 {
+            i := mine.Robot.Coord[0]
+            j := mine.Robot.Coord[1]
+            mine.Robot.Razors--
+            if mine.Layout[i+1][j-1] == BeardChar {
+                mine.Layout[i+1][j-1] = EmptyChar
+            }
+            if mine.Layout[i+1][j] == BeardChar {
+                mine.Layout[i+1][j] = EmptyChar
+            }
+            if mine.Layout[i+1][j+1] == BeardChar {
+                mine.Layout[i+1][j+1] = EmptyChar
+            }
+            if mine.Layout[i][j-1] == BeardChar {
+                mine.Layout[i][j-1] = EmptyChar
+            }
+            if mine.Layout[i][j+1] == BeardChar {
+                mine.Layout[i][j+1] = EmptyChar
+            }
+            if mine.Layout[i-1][j-1] == BeardChar {
+                mine.Layout[i-1][j-1] = EmptyChar
+            }
+            if mine.Layout[i-1][j] == BeardChar {
+                mine.Layout[i-1][j] = EmptyChar
+            }
+            if mine.Layout[i-1][j+1] == BeardChar {
+                mine.Layout[i-1][j+1] = EmptyChar
+            }
+        }
+    }
 
     //Robot Movement
     switch {
@@ -110,6 +159,9 @@ func (mine *Mine) Update(move Coord) {
         if len(mine.Lambda) == 0 {
             mine.Lift.Open = true
         }
+    //Get razor
+    case mine.Layout[move[0]][move[1]] == RazorChar:
+        mine.Robot.Razors++
     //Move rock
     case mine.Layout[move[0]][move[1]] == RockChar:
         switch {
@@ -152,8 +204,36 @@ func (mine *Mine) Update(move Coord) {
             default:
                 updated[i][j] = mine.Layout[i][j]
             case EmptyChar: 
-                if updated[i][j] != RockChar {
+                if updated[i][j] != RockChar && updated[i][j] != BeardChar {
                     updated[i][j] = EmptyChar
+                }
+            case BeardChar:
+                updated[i][j] = mine.Layout[i][j]
+                if mine.Gcount == 0 {
+                    if updated[i+1][j-1] == EmptyChar {
+                        updated[i+1][j-1] = BeardChar
+                    }
+                    if updated[i+1][j] == EmptyChar {
+                        updated[i+1][j] = BeardChar
+                    }
+                    if updated[i+1][j+1] == EmptyChar {
+                        updated[i+1][j+1] = BeardChar
+                    }
+                    if updated[i][j-1] == EmptyChar {
+                        updated[i][j-1] = BeardChar
+                    }
+                    if mine.Layout[i][j+1] == EmptyChar {
+                        updated[i][j+1] = BeardChar
+                    }
+                    if mine.Layout[i-1][j-1] == EmptyChar {
+                        updated[i-1][j-1] = BeardChar
+                    }
+                    if mine.Layout[i-1][j] == EmptyChar {
+                        updated[i-1][j] = BeardChar
+                    }
+                    if mine.Layout[i-1][j+1] == EmptyChar {
+                        updated[i-1][j+1] = BeardChar
+                    }
                 }
             case RockChar:
                 switch {
@@ -200,6 +280,11 @@ func (mine *Mine) Update(move Coord) {
         }
     }
 
+    if mine.Gcount == 0 {
+        mine.Gcount = mine.Growth - 1
+    } else {
+        mine.Gcount--
+    }
     mine.Layout = updated 
 }
 
@@ -225,7 +310,7 @@ func (mine *Mine) IsFlooded(loc Coord) bool {
     return false
 }
 
-func (mine *Mine) ValidMove(move Coord) bool {
+func (mine *Mine) ValidMove(move Coord, trim bool) bool {
     y := Abs(mine.Robot.Coord[0]-move[0])
     x := Abs(mine.Robot.Coord[1]-move[1])
     tile := mine.Layout[move[0]][move[1]]
@@ -240,8 +325,28 @@ func (mine *Mine) ValidMove(move Coord) bool {
         return false
     }
 
+    if trim {
+        if mine.Robot.Razors == 0 {
+            return false
+        } else {
+            found := false
+            for i := move[0]-1; i <= move[0]+1; i++ {
+                for j := move[1]-1; j <= move[1]+1; j++ {
+                    if mine.Layout[i][j] == BeardChar {
+                        found = true
+                    }
+                }
+            }
+            if !found {
+                return false
+            }
+        }
+    }
+
     switch {
     case 'A' <= tile && tile <= 'I':
+        return true
+    case tile == RoboChar:
         return true
     case tile == RockChar:
         switch {
@@ -278,14 +383,7 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
 
     data := make([][]byte, 0, capacity)
 
-    mine.Water = 0
-    mine.Flooding = 0
-    mine.Robot.Waterproof = 10
-    mine.Robot.Lambda = 0
-    mine.Robot.Dead = false
-    mine.Robot.Abort = false
-    mine.Complete = false
-    mine.Trampolines = make(Tramp)
+    mine.Init()
     
     i := 0
     for ; ; i++ {
@@ -308,6 +406,11 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
         } else if match := findSubmatch("Trampoline\\s+([A-Z]+)\\s+targets\\s+([0-9]+)", string(line)); match != nil && len(match) == 3 {
             num, _ := strconv.Atoi(match[2])
             mine.Trampolines[match[1]] = Target{num, Coord{-1,-1}, Coord{-1,-1}}
+        } else if match := findSubmatch("Growth\\s+([0-9]+)", string(line)); match != nil && len(match) == 2 {
+            mine.Growth, _ = strconv.Atoi(match[1])
+            mine.Gcount = mine.Growth - 1
+        } else if match := findSubmatch("Razors\\s+([0-9]+)", string(line)); match != nil && len(match) == 2 {
+            mine.Robot.Razors, _ = strconv.Atoi(match[1])
         } else {
             data = append(data, line)
         }
