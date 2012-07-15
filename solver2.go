@@ -1,0 +1,195 @@
+package main
+
+import (
+        "os"
+        "./icfp"
+        "fmt"
+        "container/list"
+)
+
+const (
+    C   int = 1
+    D   int = 1
+    E   int = 1
+    F   int = 1
+)
+
+type AStar struct {
+    Mine    *icfp.Mine
+    D       int
+    H       int
+    E       *list.Element
+}
+func usage() {
+    fmt.Fprintf(os.Stderr, "usage: %s [mapfile]\n", os.Args[0])
+    os.Exit(2)
+}
+
+func main() {
+    if len(os.Args) != 2 {
+        usage()
+    }
+
+    fmt.Println("********************");
+    fmt.Println("* Solver 2         *");
+    fmt.Println("********************");
+
+    mine := new(icfp.Mine)
+    err := mine.FromFile(os.Args[1], 100, false)
+
+    if err != nil {
+        fmt.Printf("Map failed to load, Error: %s\n", err)
+    }
+
+    //Load map data
+    mine.ParseLayout()
+    mine.Print()
+
+    //Print initial stats
+    fmt.Printf("Water: %d\n", mine.Water)
+    fmt.Printf("Flooding: %d\n", mine.Flooding)
+    fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
+    fmt.Printf("Trampolines: %v\n", mine.Trampolines)
+
+    mapQ := list.New()
+    bestSol := new(AStar)
+    bestSol.Mine = mine
+    bestSol.D = bestSol.GetD()
+    bestSol.H = bestSol.GetH()
+
+    bestSol.E = mapQ.PushBack(bestSol)
+    //mapQ.Remove(bestSol.E)
+    fmt.Printf("Length: %d\n",mapQ.Len())
+
+    options := []byte{'U','D','L','R'}
+
+    var counter = 0
+    var Solved = false
+
+    for i:=1;i<500000;i++ {
+        //Select Best Map
+        tmpSol, ok := mapQ.Front().Value.(*AStar)
+        if ok {
+            bestSol = tmpSol
+        }
+
+        for e:= mapQ.Front().Next(); e!= nil; e=e.Next() {
+            tmpSol ,ok := e.Value.(*AStar)
+            if ok {
+                if tmpSol.H+tmpSol.D<=bestSol.H+bestSol.D {
+                    bestSol = tmpSol
+                    //mapQ.Remove(bestSol.E)
+                }
+            }
+        }
+        //bestSol.Mine.Print() 
+        //fmt.Printf("Moves: %s\n",bestSol.Mine.Command)
+
+        //fmt.Printf("Length: %d\n",mapQ.Len())
+        // make children of Best map
+        mapQ.Remove(bestSol.E)
+        //fmt.Printf("Length: %d\n",mapQ.Len())
+
+        for j:=0;j<4;j++ {
+            newMine := bestSol.Mine.Copy()
+            if move(newMine,options[j]) && !newMine.Robot.Dead {
+                counter++
+                //Create new sol
+                tmpSol := new(AStar)
+                tmpSol.Mine = newMine
+                tmpSol.D = tmpSol.GetD()
+                tmpSol.H = tmpSol.GetH()
+
+                //tmpSol.Mine.Print()
+                tmpSol.E = mapQ.PushFront(tmpSol)
+                //fmt.Printf("%+v\n",newMine.Lambda)
+                if newMine.Complete {// || newMine.Robot.Lambda >= 3{
+                    bestSol = tmpSol
+                    Solved = true
+                    goto solved
+                }
+            }
+        }
+    }
+
+solved:
+        if Solved {
+            bestSol.Mine.Print()
+            fmt.Printf("%s\n",bestSol.Mine.Command)
+            fmt.Printf("Score: %d\n",bestSol.Mine.Score())
+            fmt.Printf("Counter: %d\n",counter)
+        } else {
+            fmt.Println("No solution found")
+        }
+}
+func (sol *AStar) GetH() int {
+    return len(sol.Mine.Lambda)*C+0*D
+}
+
+func (sol *AStar) GetD() int {
+    return sol.Mine.Robot.Moves*E-sol.Mine.Robot.Lambda*F
+}
+
+func move(mine *icfp.Mine, command byte) bool {
+        switch command{
+        case 'L', 'l':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}
+            if mine.ValidMove(move, false) {
+                mine.Update(move,command )
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'R', 'r':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}
+            if mine.ValidMove(move, false) {
+                mine.Update(move, command)
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'U', 'u':
+            move := icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}
+            if mine.ValidMove(move, false) {
+                mine.Update(move, command)
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'D', 'd':
+            move := icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}
+            if mine.ValidMove(move, false) {
+                mine.Update(move, command)
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'W', 'w':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
+            if mine.ValidMove(move, false) {
+                mine.Update(move, command)
+                return true
+            } else {
+                return false
+            }
+            return false
+        case 'A', 'a':
+            mine.Command = append(mine.Command,'A')
+            mine.Robot.Abort = true
+            return true
+        case 'S', 's':
+            move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
+            if mine.ValidMove(move, true) {
+                mine.Update(move, command)
+                return true
+            } else {
+                return false
+            }
+            return false
+        }
+    return false
+}
