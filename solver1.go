@@ -53,9 +53,9 @@ func main() {
                     newMine := tmpMine.Copy()
                     counter++
                     if move(newMine,options[j]) {
-                        mapQ.PushFront(newMine)
+                        mapQ.PushBack(newMine)
                         //fmt.Printf("%+v\n",newMine.Lambda)
-                        if newMine.Complete || newMine.Robot.Lambda >= 4{
+                        if newMine.Complete {//|| newMine.Robot.Lambda >= 4{
                             solved = true
                             goto solved
                         }
@@ -67,9 +67,9 @@ func main() {
 
 solved:
     if solved {
-        tmpMine, ok := mapQ.Front().Value.(*icfp.Mine)
+        tmpMine, ok := mapQ.Back().Value.(*icfp.Mine)
         if ok {
-            move(tmpMine,'A')
+            //move(tmpMine,'A')
             tmpMine.Print()
             fmt.Printf("%s\n",tmpMine.Command)
             fmt.Printf("Score: %d\n",tmpMine.Score())
