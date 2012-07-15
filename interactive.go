@@ -4,6 +4,7 @@ import (
         "os"
         "bufio"
         "fmt"
+        "unsafe"
         "./icfp"
 )
 
@@ -33,6 +34,13 @@ func main() {
     fmt.Printf("Moving down allowed: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}, false))
     fmt.Printf("Moving up allowed: %t\n", mine.ValidMove(icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}, false))
 
+    size := unsafe.Sizeof(*mine) + unsafe.Sizeof(mine.Layout)
+    for i := range mine.Layout {
+        size += unsafe.Sizeof(mine.Layout[i])
+    }
+
+    fmt.Printf("Size: %d\n", size)
+
 
     //mine.Update(icfp.Coord{2,3})
     //for i := range mine.Layout {
@@ -51,7 +59,7 @@ func serve(mine *icfp.Mine) {
         case 'L', 'l':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]-1}
             if mine.ValidMove(move, false) {
-                mine.Update(move, false)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
@@ -59,7 +67,7 @@ func serve(mine *icfp.Mine) {
         case 'R', 'r':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}
             if mine.ValidMove(move, false) {
-                mine.Update(move, false)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
@@ -67,7 +75,7 @@ func serve(mine *icfp.Mine) {
         case 'U', 'u':
             move := icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}
             if mine.ValidMove(move, false) {
-                mine.Update(move, false)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
@@ -75,7 +83,7 @@ func serve(mine *icfp.Mine) {
         case 'D', 'd':
             move := icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}
             if mine.ValidMove(move, false) {
-                mine.Update(move, false)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
@@ -83,7 +91,7 @@ func serve(mine *icfp.Mine) {
         case 'W', 'w':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             if mine.ValidMove(move, false) {
-                mine.Update(move, false)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
@@ -91,7 +99,7 @@ func serve(mine *icfp.Mine) {
         case 'S', 's':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             if mine.ValidMove(move, true) {
-                mine.Update(move, true)
+                mine.Update(move, char)
             } else {
                 fmt.Println("Invalid move")
             }
