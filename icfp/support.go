@@ -15,7 +15,7 @@ func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
         }
     }
 
-    return -1, errors.New("Item not found in CoordSlice")
+    return -1, fmt.Errorf("Item not found in CoordSlice: %v", item)
 }
 func (mine *Mine) Copy() *Mine {
     tmp := new(Mine)
