@@ -37,9 +37,19 @@ func (mine *Mine) Copy() *Mine {
     copy(newSlice2,mine.Command)
     tmp.Command = newSlice2
 
-
+    tmp.Trampolines = mine.Trampolines.Copy()
 
     return tmp
+}
+
+func (tramp *Tramp) Copy() Tramp {
+    cpy := make(Tramp)
+
+    for k, v := range *tramp {
+        cpy[k] = v
+    }
+
+    return cpy
 }
 
 func (mine *Mine) shave() bool {

@@ -143,6 +143,7 @@ func (mine *Mine) Update(move Coord, command byte) {
         return
     }
 
+
     mine.Complete = false
 
     //Move the robot
