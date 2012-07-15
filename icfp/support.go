@@ -59,6 +59,19 @@ func (mine *Mine) RemoveTramps(targ Target) {
     }
 }
 
+func (mine *Mine) Score() int {
+    if(mine.Robot.Dead) {
+        return 0
+    } else if(mine.Robot.Abort) {
+        return mine.Robot.Lambda*50-mine.Robot.Moves
+    } else if(mine.Complete) {
+        return mine.Robot.Lambda*75-mine.Robot.Moves
+    } else {
+        return mine.Robot.Lambda*25-mine.Robot.Moves
+    }
+    return 0
+}
+
 func (mine *Mine) Print() {
     //fmt.Printf("Current Score: %d\n",mine.score());
     for i := range mine.Layout {

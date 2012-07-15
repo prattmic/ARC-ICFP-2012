@@ -288,19 +288,6 @@ func (mine *Mine) Update(move Coord, trim bool) {
     mine.Layout = updated 
 }
 
-func (mine *Mine) score() int {
-    if(mine.Robot.Dead) {
-        return 0
-    } else if(mine.Robot.Abort) {
-        return mine.Robot.Lambda*50-mine.Robot.Moves
-    } else if(mine.Complete) {
-        return mine.Robot.Lambda*75-mine.Robot.Moves
-    } else {
-        return mine.Robot.Lambda*25-mine.Robot.Moves
-    }
-    return 0
-}
-
 
 func (mine *Mine) IsFlooded(loc Coord) bool {
     if (len(mine.Layout) - loc[0]) < (mine.Water + mine.Robot.Moves/mine.Flooding) {
@@ -377,7 +364,7 @@ func (mine *Mine) ValidMove(move Coord, trim bool) bool {
     return false
 }
 
-func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
+func (mine *Mine) FromFile(name string, capacity uint32, printonread bool) (err error) {
     file, err := os.Open(name)
     if err != nil {
         return err
@@ -397,6 +384,10 @@ func (mine *Mine) FromFile(name string, capacity uint32) (err error) {
             break
         } else if err != nil {
             fmt.Printf("Error: %s\n", err)
+        }
+
+        if printonread {
+            fmt.Println(string(line))
         }
 
         // Blank
