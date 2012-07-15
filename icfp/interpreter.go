@@ -9,7 +9,29 @@ import (
         "fmt"
 )
 
-type Map        [][]byte
+type Cell interface {
+    Parse(coord Coord, mine *Mine)
+    Update(coord Coord, mine *Mine, updated Map)
+    MergeRobot(coord Coord, mine *Mine) bool
+    Byte() byte
+}
+
+type CellSlice      []Cell
+type CellSliceSlice []CellSlice
+
+type RobotCell  byte
+type RockCell   byte
+type WallCell   byte
+type LambdaCell byte
+type EarthCell  byte
+type EmptyCell  byte
+type LiftCell   byte
+type TrampCell  byte
+type TargCell   byte
+type BeardCell  byte
+type RazorCell  byte
+
+type Map        CellSliceSlice
 type Coord      [2]int
 type CoordSlice []Coord
 type Robot struct {
@@ -47,16 +69,16 @@ type Mine struct {
 }
 
 const (
-    ROBOT   byte = 'R'
-    ROCK    byte = '*'
-    WALL    byte = '#'
-    LAMBDA  byte = '\\'
-    EARTH   byte = '.'
-    EMPTY   byte = ' '
-    CLIFT   byte = 'L'
-    OLIFT   byte = 'O'
-    BEARD   byte = 'W'
-    RAZOR   byte = '!'
+    ROBOT   RobotCell   = 'R'
+    ROCK    RockCell    = '*'
+    WALL    WallCell    = '#'
+    LAMBDA  LambdaCell  = '\\'
+    EARTH   EarthCell   = '.'
+    EMPTY   EmptyCell   = ' '
+    CLIFT   LiftCell    = 'L'
+    OLIFT   LiftCell    = 'O'
+    BEARD   BeardCell   = 'W'
+    RAZOR   RazorCell   = '!'
 )
 
 func (mine *Mine) Init() {
@@ -78,29 +100,12 @@ func (mine *Mine) ParseLayout() {
 
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
-            switch {
-            case mine.Layout[i][j] == LAMBDA:
-                mine.Lambda = append(mine.Lambda, Coord{i,j})
-            case mine.Layout[i][j] == CLIFT:
-                mine.Lift.Coord = Coord{i,j}
-                mine.Lift.Open = false
-            case mine.Layout[i][j] == ROBOT:
-                mine.Robot.Coord = Coord{i,j}
-            case '0' <= mine.Layout[i][j] && mine.Layout[i][j] <= '9':
-                num, _ := strconv.Atoi(string(mine.Layout[i][j]))
-                mine.TargetCoord(num, Coord{i, j})
-            case 'A' <= mine.Layout[i][j] && mine.Layout[i][j] <= 'I':
-                targ := mine.Trampolines[string(mine.Layout[i][j])]
-                targ.TrampCoord = Coord{i,j}
-                mine.Trampolines[string(mine.Layout[i][j])] = targ
-            }
+            mine.Layout[i][j].Parse(Coord{i,j}, mine)
         }
     }
 }
 
 func (mine *Mine) Update(move Coord, command byte) {
-    var trampjump = false
-
     mine.Command = append(mine.Command,command)
 
     shave := command=='S'||command=='s'
@@ -116,85 +121,12 @@ func (mine *Mine) Update(move Coord, command byte) {
     }
 
     //Robot Movement
-    switch {
-    //Get lambda
-    case mine.Layout[move[0]][move[1]] == LAMBDA:
-        err := mine.eatLambda(move)
-        if err != nil {
-            return
-        }
-    //Get razor
-    case mine.Layout[move[0]][move[1]] == RAZOR:
-        mine.Robot.Razors++
-    //Move rock
-    case mine.Layout[move[0]][move[1]] == ROCK:
-        switch {
-        case mine.Robot.Coord[1]<move[1]:
-            mine.Layout[move[0]][move[1]+1] = ROCK
-
-        case mine.Robot.Coord[1]>move[1]:
-            mine.Layout[move[0]][move[1]-1] = ROCK
-        }
-    //Trampoline
-    case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'I':
-        trampjump = true
-        mine.takejump(move)
-    //Check for completion    
-    case mine.Layout[move[0]][move[1]] == OLIFT:
-        mine.Complete = true
-        return
-    }
-
-
-    mine.Complete = false
-
-    //Move the robot
-    if !trampjump {
-        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EMPTY
-        mine.Layout[move[0]][move[1]] = ROBOT
-        mine.Robot.Coord = move
-    }
+    mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]].MergeRobot(move, mine)
 
     // Loop through and update the level
     for i := len(mine.Layout)-1; i>=0; i-- {
         for j := range mine.Layout[i] {
-            switch mine.Layout[i][j] {
-            default:
-                updated[i][j] = mine.Layout[i][j]
-            case EMPTY: 
-                if updated[i][j] != ROCK && updated[i][j] != BEARD {
-                    updated[i][j] = EMPTY
-                }
-            case BEARD:
-                updated[i][j] = mine.Layout[i][j]
-                if mine.Gcount == 0 {
-                    for k := i-1; k <= i+1; k++ {
-                        for l := j-1; l <= j+1; l++ {
-                            if mine.Layout[k][l] == EMPTY {
-                                updated[k][l] = BEARD
-                            }
-                        }
-                    }
-                }
-            case ROCK:
-                switch {
-                case mine.Layout[i+1][j] == EMPTY:
-                    //Rule 1
-                    updated[i][j] = EMPTY
-                    updated[i+1][j] = ROCK
-
-                case (mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == LAMBDA) && mine.Layout[i][j+1] == EMPTY &&  mine.Layout[i+1][j+1] == EMPTY:
-                    //Rule 2 and 4
-                    updated[i][j] = EMPTY
-                    updated[i+1][j+1] = ROCK
-                case mine.Layout[i+1][j] == ROCK && mine.Layout[i][j-1] == EMPTY && mine.Layout[i+1][j-1] == EMPTY:
-                    //Rule 3
-                    updated[i][j] = EMPTY
-                    updated[i+1][j-1] = ROCK
-                default:
-                    updated[i][j] = ROCK
-                }
-            }
+            mine.Layout[i][j].Update(Coord{i,j}, mine, updated)
         }
     }
 
@@ -277,7 +209,7 @@ func (mine *Mine) ValidMove(move Coord, shave bool) bool {
     }
 
     switch {
-    case 'A' <= tile && tile <= 'I':
+    case 'A' <= tile.Byte() && tile.Byte() <= 'I':
         return true
     case tile == ROBOT:
         return true
@@ -314,7 +246,7 @@ func (mine *Mine) FromFile(name string, capacity uint32, printonread bool) (err 
     
     r := bufio.NewReaderSize(file, int(fileinfo.Size()))
 
-    data := make([][]byte, 0, capacity)
+    data := make(Map, 0, capacity)
 
     mine.Init()
     
@@ -349,7 +281,8 @@ func (mine *Mine) FromFile(name string, capacity uint32, printonread bool) (err 
         } else if match := findSubmatch("Razors\\s+([0-9]+)", string(line)); match != nil && len(match) == 2 {
             mine.Robot.Razors, _ = strconv.Atoi(match[1])
         } else {
-            data = append(data, line)
+            cells := Bytes2Cells(line)
+            data = append(data, cells)
         }
     }
 

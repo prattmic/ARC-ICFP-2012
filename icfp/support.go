@@ -9,11 +9,11 @@ import (
 )
 
 func NewMap(ref Map) Map {
-    updated := make([][]byte, len(ref))
+    updated := make(Map, len(ref))
 
     // Create new blank map
     for i := range ref {
-        updated[i] = make([]byte, len(ref[i]))
+        updated[i] = make([]Cell, len(ref[i]))
     }
 
     return updated
@@ -23,9 +23,9 @@ func (mine *Mine) Copy() *Mine {
     tmp := new(Mine)
     *tmp = *mine
 
-    tmp.Layout= make([][]byte, len(mine.Layout))
+    tmp.Layout= make(Map, len(mine.Layout))
     for i := range mine.Layout {
-        newSlice := make([]byte, len(mine.Layout[i]))
+        newSlice := make([]Cell, len(mine.Layout[i]))
         copy(newSlice,mine.Layout[i])
         tmp.Layout[i] = newSlice
     }
@@ -92,7 +92,7 @@ func (mine *Mine) eatLambda(move Coord) error {
 }
 
 func (mine *Mine) takejump(move Coord) {
-    targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
+    targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]].Byte())]
     mine.RemoveTramps(targ)
 
     mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EMPTY
@@ -154,8 +154,57 @@ func (mine *Mine) Score() int {
 func (mine *Mine) Print() {
     //fmt.Printf("Current Score: %d\n",mine.score());
     for i := range mine.Layout {
-        fmt.Println(string(mine.Layout[i]))
+        //fmt.Println(string(mine.Layout[i]))
+        fmt.Println(mine.Layout[i].String())
     }
+}
+
+func (line CellSlice) String() string {
+    s := make([]byte, 0)
+    for i := range line {
+        s = append(s, line[i].Byte())
+    }
+
+    return string(s)
+}
+
+func Byte2Cell(char byte) Cell {
+    switch {
+    case char == byte(ROBOT):
+        return RobotCell(char)
+    case char == byte(ROCK):
+        return RockCell(char)
+    case char == byte(WALL):
+        return WallCell(char)
+    case char == byte(LAMBDA):
+        return LambdaCell(char)
+    case char == byte(EARTH):
+        return EarthCell(char)
+    case char == byte(EMPTY):
+        return EmptyCell(char)
+    case char == byte(CLIFT), char == byte(OLIFT):
+        return LiftCell(char)
+    case char == byte(BEARD):
+        return BeardCell(char)
+    case char == byte(RAZOR):
+        return RazorCell(char)
+    case 'A' <= char && char <= 'Z':
+        return TrampCell(char)
+    case '1' <= char && char <= '9':
+        return TargCell(char)
+    }
+
+    return nil
+}
+
+func Bytes2Cells(line []byte) []Cell {
+    cells := make(CellSlice, len(line))
+
+    for i := range line {
+        cells[i] = Byte2Cell(line[i])
+    }
+
+    return cells
 }
 
 // Inspired by Alex Ray

@@ -16,9 +16,7 @@ func main() {
         fmt.Printf("Error: %s\n", err)
     }
 
-    for i := range mine.Layout {
-        fmt.Println(string(mine.Layout[i]))
-    }
+    mine.Print()
     mine.ParseLayout()
     fmt.Printf("Water: %d\n", mine.Water)
     fmt.Printf("Flooding: %d\n", mine.Flooding)
