@@ -11,7 +11,7 @@ func main() {
     fmt.Println("********************");
 
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/contest1.map", 100)
+    err := mine.FromFile("maps/contest1.map", 100, false)
 
     if err != nil {
         fmt.Printf("Map failed to load, Error: %s\n", err)
