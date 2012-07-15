@@ -12,7 +12,7 @@ func main() {
     fmt.Println("********************");
 
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/contest1.map", 100, false)
+    err := mine.FromFile("maps/flood1.map", 100, false)
 
     if err != nil {
         fmt.Printf("Map failed to load, Error: %s\n", err)
@@ -32,7 +32,8 @@ func main() {
 
     options := []byte{'U','D','L','R'}
 
-    var solved = false;
+    var solved = false
+    var counter = 0
 
     for i:=1;i<20;i++ {
         for e:= mapQ.Front(); e!= nil; e=e.Next() {
@@ -40,10 +41,11 @@ func main() {
             if ok {
                 for j:=0;j<4;j++ {
                     newMine := tmpMine.Copy()
+                    counter++
                     if move(newMine,options[j]) {
                         mapQ.PushFront(newMine)
                         //fmt.Printf("%+v\n",newMine.Lambda)
-                        if newMine.Complete || newMine.Robot.Lambda >= 3{
+                        if newMine.Complete || newMine.Robot.Lambda >= 4{
                             solved = true
                         }
                     }
@@ -67,6 +69,7 @@ func main() {
             tmpMine.Print()
             fmt.Printf("%s\n",tmpMine.Command)
             fmt.Printf("Score: %d\n",tmpMine.Score())
+            fmt.Printf("Counter: %d\n",counter)
         }
     }
 /*
