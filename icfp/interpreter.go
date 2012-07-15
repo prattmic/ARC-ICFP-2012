@@ -237,16 +237,16 @@ func (mine *Mine) Update(move Coord, trim bool) {
                 }
             case RockChar:
                 switch {
-                case mine.Layout[i+1][j] == EmptyChar:
+                case mine.Layout[i+1][j] == EmptyChar && updated[i+1][j] != BeardChar:
                     //Rule 1
                     updated[i][j] = EmptyChar
                     updated[i+1][j] = RockChar
 
-                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar && mine.Layout[i+1][j+1] == EmptyChar:
+                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && updated[i+1][j] != BeardChar && mine.Layout[i][j+1] == EmptyChar && updated[i][j+1] != BeardChar && mine.Layout[i+1][j+1] == EmptyChar && updated[i+1][j+1] != BeardChar:
                     //Rule 2 and 4
                     updated[i][j] = EmptyChar
                     updated[i+1][j+1] = RockChar
-                case mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar:
+                case mine.Layout[i+1][j] == RockChar && updated[i+1][j] != BeardChar && mine.Layout[i][j-1] == EmptyChar && updated[i][j-1] != BeardChar && mine.Layout[i+1][j-1] == EmptyChar && updated[i+1][j-1] != BeardChar:
                     //Rule 3
                     updated[i][j] = EmptyChar
                     updated[i+1][j-1] = RockChar
@@ -341,6 +341,11 @@ func (mine *Mine) ValidMove(move Coord, trim bool) bool {
                 return false
             }
         }
+    }
+
+    // Move down with rock above
+    if (move[0]-mine.Robot.Coord[0] == 1) && mine.Layout[move[0]-2][move[1]] == RockChar {
+        return false
     }
 
     switch {
