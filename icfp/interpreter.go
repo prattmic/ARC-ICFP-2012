@@ -94,52 +94,26 @@ func (mine *Mine) ParseLayout() {
     }
 }
 
-func (mine *Mine) Update(move Coord, trim bool) {
+func (mine *Mine) Update(move Coord, shave bool) {
     var trampjump = false
 
-    updated := make([][]byte, len(mine.Layout))
-
-    // Create new blank map
-    for i := range mine.Layout {
-        updated[i] = make([]byte, len(mine.Layout[i]))
-    }
+    updated := NewMap(mine.Layout)
 
     //Update moves counter
     mine.Robot.Moves++
 
     //Trim beards
-    if trim {
-        if mine.Robot.Razors > 0 {
-            mine.Robot.Razors--
-
-            for i := mine.Robot.Coord[0]-1; i <= mine.Robot.Coord[0]+1; i++ {
-                for j := mine.Robot.Coord[1]-1; j <= mine.Robot.Coord[1]+1; j++ {
-                    if mine.Layout[i][j] == BeardChar {
-                        mine.Layout[i][j] = EmptyChar
-                    }
-                }
-            }
-        }
+    if shave {
+        mine.shave()
     }
 
     //Robot Movement
     switch {
     //Get lambda
     case mine.Layout[move[0]][move[1]] == LambdaChar:
-        mine.Robot.Lambda++
-
-        /* Get index in list */
-        coordi, err := mine.Lambda.FindCoord(Coord{move[0], move[1]})
+        err := mine.eatLambda(move)
         if err != nil {
-            fmt.Printf("Error: %s\n", err)
             return
-        }
-
-        /* Delete it */
-        mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
-
-        if len(mine.Lambda) == 0 {
-            mine.Lift.Open = true
         }
     //Get razor
     case mine.Layout[move[0]][move[1]] == RazorChar:
@@ -156,15 +130,8 @@ func (mine *Mine) Update(move Coord, trim bool) {
     //Trampoline
     case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'I':
         trampjump = true
-        targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
-        mine.RemoveTramps(targ)
-
-        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
-        mine.Layout[move[0]][move[1]] = EmptyChar
-        mine.Layout[targ.Coord[0]][targ.Coord[1]] = RoboChar
-        mine.Robot.Coord = targ.Coord
-
-        //Check for completion    
+        mine.takejump(move)
+    //Check for completion    
     case mine.Layout[move[0]][move[1]] == OLiftChar:
         mine.Complete = true
         return
@@ -262,7 +229,7 @@ func (mine *Mine) IsFlooded(loc Coord) bool {
     return false
 }
 
-func (mine *Mine) ValidMove(move Coord, trim bool) bool {
+func (mine *Mine) ValidMove(move Coord, shave bool) bool {
     y := Abs(mine.Robot.Coord[0]-move[0])
     x := Abs(mine.Robot.Coord[1]-move[1])
     tile := mine.Layout[move[0]][move[1]]
@@ -277,7 +244,7 @@ func (mine *Mine) ValidMove(move Coord, trim bool) bool {
         return false
     }
 
-    if trim {
+    if shave {
         if mine.Robot.Razors == 0 {
             return false
         } else {
@@ -314,7 +281,7 @@ func (mine *Mine) ValidMove(move Coord, trim bool) bool {
         default:
             return false
         }
-    case tile == EmptyChar, tile == EarthChar, tile == LambdaChar:
+    case tile == EmptyChar, tile == EarthChar, tile == LambdaChar, tile == RazorChar:
         switch {
         case (move[0]-2) >= 0 && len(mine.Layout[move[0]-2]) > move[1] && mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
             return false

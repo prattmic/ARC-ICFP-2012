@@ -1,17 +1,27 @@
 package main
 
 import (
+        "os"
         "./icfp"
         "fmt"
 )
 
+func usage() {
+    fmt.Fprintf(os.Stderr, "usage: %s [mapfile]\n", os.Args[0])
+    os.Exit(2)
+}
+
 func main() {
+    if len(os.Args) != 2 {
+        usage()
+    }
+
     fmt.Println("********************");
     fmt.Println("* Solver 1         *");
     fmt.Println("********************");
 
     mine := new(icfp.Mine)
-    err := mine.FromFile("maps/contest1.map", 100, false)
+    err := mine.FromFile(os.Args[1], 100, false)
 
     if err != nil {
         fmt.Printf("Map failed to load, Error: %s\n", err)

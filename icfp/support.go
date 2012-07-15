@@ -8,15 +8,17 @@ import (
         "io"
 )
 
-func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
-    for i := range coords {
-        if coords[i] == item {
-            return i, nil
-        }
+func NewMap(ref Map) Map {
+    updated := make([][]byte, len(ref))
+
+    // Create new blank map
+    for i := range ref {
+        updated[i] = make([]byte, len(ref[i]))
     }
 
-    return -1, fmt.Errorf("Item not found in CoordSlice: %v", item)
+    return updated
 }
+
 func (mine *Mine) Copy() *Mine {
     tmp := new(Mine)
     *tmp = *mine
@@ -30,8 +32,67 @@ func (mine *Mine) Copy() *Mine {
     }
 
     return tmp
-
 }
+
+func (mine *Mine) shave() bool {
+    if mine.Robot.Razors > 0 {
+        mine.Robot.Razors--
+
+        for i := mine.Robot.Coord[0]-1; i <= mine.Robot.Coord[0]+1; i++ {
+            for j := mine.Robot.Coord[1]-1; j <= mine.Robot.Coord[1]+1; j++ {
+                if mine.Layout[i][j] == BeardChar {
+                    mine.Layout[i][j] = EmptyChar
+                }
+            }
+        }
+
+        return true
+    }
+
+    return false
+}
+
+func (mine *Mine) eatLambda(move Coord) error {
+    mine.Robot.Lambda++
+
+    /* Get index in list */
+    coordi, err := mine.Lambda.FindCoord(Coord{move[0], move[1]})
+    if err != nil {
+        fmt.Printf("Error: %s\n", err)
+        mine.Robot.Lambda--
+        return err
+    }
+
+    /* Delete it */
+    mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
+
+    if len(mine.Lambda) == 0 {
+        mine.Lift.Open = true
+    }
+
+    return nil
+}
+
+func (mine *Mine) takejump(move Coord) {
+    targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
+    mine.RemoveTramps(targ)
+
+    mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
+    mine.Layout[move[0]][move[1]] = EmptyChar
+    mine.Layout[targ.Coord[0]][targ.Coord[1]] = RoboChar
+    mine.Robot.Coord = targ.Coord
+}
+
+func (coords CoordSlice) FindCoord(item Coord) (index int, err error) {
+    for i := range coords {
+        if coords[i] == item {
+            return i, nil
+        }
+    }
+
+    return -1, fmt.Errorf("Item not found in CoordSlice: %v", item)
+}
+
 func (mine *Mine) TargetCoord(n int, coord Coord) error {
     found := false
     for key, value := range mine.Trampolines {

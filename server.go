@@ -79,11 +79,11 @@ func serve(mine *icfp.Mine) {
             //mine.Print()
         case 'S', 's':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
-            if !mine.ValidMove(move, false) {
+            if !mine.ValidMove(move, true) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, true)
             //mine.Print()
         }
     }
