@@ -58,8 +58,8 @@ func (mine *Mine) shave() bool {
 
         for i := mine.Robot.Coord[0]-1; i <= mine.Robot.Coord[0]+1; i++ {
             for j := mine.Robot.Coord[1]-1; j <= mine.Robot.Coord[1]+1; j++ {
-                if mine.Layout[i][j] == BeardChar {
-                    mine.Layout[i][j] = EmptyChar
+                if mine.Layout[i][j] == BEARD {
+                    mine.Layout[i][j] = EMPTY
                 }
             }
         }
@@ -95,9 +95,9 @@ func (mine *Mine) takejump(move Coord) {
     targ := mine.Trampolines[string(mine.Layout[move[0]][move[1]])]
     mine.RemoveTramps(targ)
 
-    mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
-    mine.Layout[move[0]][move[1]] = EmptyChar
-    mine.Layout[targ.Coord[0]][targ.Coord[1]] = RoboChar
+    mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EMPTY
+    mine.Layout[move[0]][move[1]] = EMPTY
+    mine.Layout[targ.Coord[0]][targ.Coord[1]] = ROBOT
     mine.Robot.Coord = targ.Coord
 }
 
@@ -131,8 +131,8 @@ func (mine *Mine) TargetCoord(n int, coord Coord) error {
 func (mine *Mine) RemoveTramps(targ Target) {
     for key, value := range mine.Trampolines {
         if value.Num == targ.Num {
-            mine.Layout[value.TrampCoord[0]][value.TrampCoord[1]] = EmptyChar
-            mine.Layout[value.Coord[0]][value.Coord[1]] = EmptyChar
+            mine.Layout[value.TrampCoord[0]][value.TrampCoord[1]] = EMPTY
+            mine.Layout[value.Coord[0]][value.Coord[1]] = EMPTY
             delete(mine.Trampolines, key)
         }
     }

@@ -46,16 +46,18 @@ type Mine struct {
     Complete    bool
 }
 
-var RoboChar    byte = 'R'
-var RockChar    byte = '*'
-var WallChar    byte = '#'
-var LambdaChar  byte = '\\'
-var EarthChar   byte = '.'
-var EmptyChar   byte = ' '
-var CLiftChar   byte = 'L'
-var OLiftChar   byte = 'O'
-var BeardChar   byte = 'W'
-var RazorChar   byte = '!'
+const (
+    ROBOT   byte = 'R'
+    ROCK    byte = '*'
+    WALL    byte = '#'
+    LAMBDA  byte = '\\'
+    EARTH   byte = '.'
+    EMPTY   byte = ' '
+    CLIFT   byte = 'L'
+    OLIFT   byte = 'O'
+    BEARD   byte = 'W'
+    RAZOR   byte = '!'
+)
 
 func (mine *Mine) Init() {
     mine.Water = 0
@@ -77,12 +79,12 @@ func (mine *Mine) ParseLayout() {
     for i := range mine.Layout {
         for j := range mine.Layout[i] {
             switch {
-            case mine.Layout[i][j] == LambdaChar:
+            case mine.Layout[i][j] == LAMBDA:
                 mine.Lambda = append(mine.Lambda, Coord{i,j})
-            case mine.Layout[i][j] == CLiftChar:
+            case mine.Layout[i][j] == CLIFT:
                 mine.Lift.Coord = Coord{i,j}
                 mine.Lift.Open = false
-            case mine.Layout[i][j] == RoboChar:
+            case mine.Layout[i][j] == ROBOT:
                 mine.Robot.Coord = Coord{i,j}
             case '0' <= mine.Layout[i][j] && mine.Layout[i][j] <= '9':
                 num, _ := strconv.Atoi(string(mine.Layout[i][j]))
@@ -116,29 +118,29 @@ func (mine *Mine) Update(move Coord, command byte) {
     //Robot Movement
     switch {
     //Get lambda
-    case mine.Layout[move[0]][move[1]] == LambdaChar:
+    case mine.Layout[move[0]][move[1]] == LAMBDA:
         err := mine.eatLambda(move)
         if err != nil {
             return
         }
     //Get razor
-    case mine.Layout[move[0]][move[1]] == RazorChar:
+    case mine.Layout[move[0]][move[1]] == RAZOR:
         mine.Robot.Razors++
     //Move rock
-    case mine.Layout[move[0]][move[1]] == RockChar:
+    case mine.Layout[move[0]][move[1]] == ROCK:
         switch {
         case mine.Robot.Coord[1]<move[1]:
-            mine.Layout[move[0]][move[1]+1] = RockChar
+            mine.Layout[move[0]][move[1]+1] = ROCK
 
         case mine.Robot.Coord[1]>move[1]:
-            mine.Layout[move[0]][move[1]-1] = RockChar
+            mine.Layout[move[0]][move[1]-1] = ROCK
         }
     //Trampoline
     case 'A' <= mine.Layout[move[0]][move[1]] && mine.Layout[move[0]][move[1]] <= 'I':
         trampjump = true
         mine.takejump(move)
     //Check for completion    
-    case mine.Layout[move[0]][move[1]] == OLiftChar:
+    case mine.Layout[move[0]][move[1]] == OLIFT:
         mine.Complete = true
         return
     }
@@ -148,8 +150,8 @@ func (mine *Mine) Update(move Coord, command byte) {
 
     //Move the robot
     if !trampjump {
-        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EmptyChar
-        mine.Layout[move[0]][move[1]] = RoboChar
+        mine.Layout[mine.Robot.Coord[0]][mine.Robot.Coord[1]] = EMPTY
+        mine.Layout[move[0]][move[1]] = ROBOT
         mine.Robot.Coord = move
     }
 
@@ -159,38 +161,38 @@ func (mine *Mine) Update(move Coord, command byte) {
             switch mine.Layout[i][j] {
             default:
                 updated[i][j] = mine.Layout[i][j]
-            case EmptyChar: 
-                if updated[i][j] != RockChar && updated[i][j] != BeardChar {
-                    updated[i][j] = EmptyChar
+            case EMPTY: 
+                if updated[i][j] != ROCK && updated[i][j] != BEARD {
+                    updated[i][j] = EMPTY
                 }
-            case BeardChar:
+            case BEARD:
                 updated[i][j] = mine.Layout[i][j]
                 if mine.Gcount == 0 {
                     for k := i-1; k <= i+1; k++ {
                         for l := j-1; l <= j+1; l++ {
-                            if mine.Layout[k][l] == EmptyChar {
-                                updated[k][l] = BeardChar
+                            if mine.Layout[k][l] == EMPTY {
+                                updated[k][l] = BEARD
                             }
                         }
                     }
                 }
-            case RockChar:
+            case ROCK:
                 switch {
-                case mine.Layout[i+1][j] == EmptyChar:
+                case mine.Layout[i+1][j] == EMPTY:
                     //Rule 1
-                    updated[i][j] = EmptyChar
-                    updated[i+1][j] = RockChar
+                    updated[i][j] = EMPTY
+                    updated[i+1][j] = ROCK
 
-                case (mine.Layout[i+1][j] == RockChar || mine.Layout[i+1][j] == LambdaChar) && mine.Layout[i][j+1] == EmptyChar &&  mine.Layout[i+1][j+1] == EmptyChar:
+                case (mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == LAMBDA) && mine.Layout[i][j+1] == EMPTY &&  mine.Layout[i+1][j+1] == EMPTY:
                     //Rule 2 and 4
-                    updated[i][j] = EmptyChar
-                    updated[i+1][j+1] = RockChar
-                case mine.Layout[i+1][j] == RockChar && mine.Layout[i][j-1] == EmptyChar && mine.Layout[i+1][j-1] == EmptyChar:
+                    updated[i][j] = EMPTY
+                    updated[i+1][j+1] = ROCK
+                case mine.Layout[i+1][j] == ROCK && mine.Layout[i][j-1] == EMPTY && mine.Layout[i+1][j-1] == EMPTY:
                     //Rule 3
-                    updated[i][j] = EmptyChar
-                    updated[i+1][j-1] = RockChar
+                    updated[i][j] = EMPTY
+                    updated[i+1][j-1] = ROCK
                 default:
-                    updated[i][j] = RockChar
+                    updated[i][j] = ROCK
                 }
             }
         }
@@ -198,14 +200,14 @@ func (mine *Mine) Update(move Coord, command byte) {
 
     // Update State of the lift gate
     if mine.Lift.Open {
-        updated[mine.Lift.Coord[0]][mine.Lift.Coord[1]] = OLiftChar
+        updated[mine.Lift.Coord[0]][mine.Lift.Coord[1]] = OLIFT
     } else {
-        updated[mine.Lift.Coord[0]][mine.Lift.Coord[1]] = CLiftChar
+        updated[mine.Lift.Coord[0]][mine.Lift.Coord[1]] = CLIFT
     }
 
     //Update survival of the robot
     // The robot is dead if there is a rock above it that was not there previously (it is falling on the robot!)
-    mine.Robot.Dead =(mine.Layout[mine.Robot.Coord[0]-1][mine.Robot.Coord[1]] != RockChar)&&(updated[mine.Robot.Coord[0]-1][mine.Robot.Coord[1]] == RockChar)
+    mine.Robot.Dead =(mine.Layout[mine.Robot.Coord[0]-1][mine.Robot.Coord[1]] != ROCK)&&(updated[mine.Robot.Coord[0]-1][mine.Robot.Coord[1]] == ROCK)
 
     //Update water damage
     if mine.Flooding != 0 {
@@ -258,7 +260,7 @@ func (mine *Mine) ValidMove(move Coord, shave bool) bool {
             found := false
             for i := move[0]-1; i <= move[0]+1; i++ {
                 for j := move[1]-1; j <= move[1]+1; j++ {
-                    if mine.Layout[i][j] == BeardChar {
+                    if mine.Layout[i][j] == BEARD {
                         found = true
                     }
                 }
@@ -270,32 +272,32 @@ func (mine *Mine) ValidMove(move Coord, shave bool) bool {
     }
 
     // Move down with rock above
-    if (move[0]-mine.Robot.Coord[0] == 1) && mine.Layout[move[0]-2][move[1]] == RockChar {
+    if (move[0]-mine.Robot.Coord[0] == 1) && mine.Layout[move[0]-2][move[1]] == ROCK {
         return false
     }
 
     switch {
     case 'A' <= tile && tile <= 'I':
         return true
-    case tile == RoboChar:
+    case tile == ROBOT:
         return true
-    case tile == RockChar:
+    case tile == ROCK:
         switch {
-        case horz == -1 && mine.Layout[move[0]][move[1]-1] == EmptyChar:    // Pushable Rock
+        case horz == -1 && mine.Layout[move[0]][move[1]-1] == EMPTY:    // Pushable Rock
             return true
-        case horz == 1 && mine.Layout[move[0]][move[1]+1] == EmptyChar:     // Pushable Rock
+        case horz == 1 && mine.Layout[move[0]][move[1]+1] == EMPTY:     // Pushable Rock
             return true
         default:
             return false
         }
-    case tile == EmptyChar, tile == EarthChar, tile == LambdaChar, tile == RazorChar:
+    case tile == EMPTY, tile == EARTH, tile == LAMBDA, tile == RAZOR:
         switch {
-        case (move[0]-2) >= 0 && len(mine.Layout[move[0]-2]) > move[1] && mine.Layout[move[0]-2][move[1]] == RockChar && mine.Layout[move[0]-1][move[1]] == EmptyChar:   // Rock up 2 with empty space between
+        case (move[0]-2) >= 0 && len(mine.Layout[move[0]-2]) > move[1] && mine.Layout[move[0]-2][move[1]] == ROCK && mine.Layout[move[0]-1][move[1]] == EMPTY:   // Rock up 2 with empty space between
             return false
         default:
             return true
         }
-    case tile == OLiftChar:
+    case tile == OLIFT:
         return true
     }
 
