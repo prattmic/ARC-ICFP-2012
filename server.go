@@ -43,7 +43,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, char)
             //mine.Print()
         case 'R', 'r':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]+1}
@@ -51,7 +51,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, char)
             //mine.Print()
         case 'U', 'u':
             move := icfp.Coord{mine.Robot.Coord[0]-1, mine.Robot.Coord[1]}
@@ -59,7 +59,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, char)
             //mine.Print()
         case 'D', 'd':
             move := icfp.Coord{mine.Robot.Coord[0]+1, mine.Robot.Coord[1]}
@@ -67,7 +67,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, char)
             //mine.Print()
         case 'W', 'w':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
@@ -75,7 +75,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, false)
+            mine.Update(move, char)
             //mine.Print()
         case 'S', 's':
             move := icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
@@ -83,7 +83,7 @@ func serve(mine *icfp.Mine) {
                 //Wait
                 move = icfp.Coord{mine.Robot.Coord[0], mine.Robot.Coord[1]}
             }
-            mine.Update(move, true)
+            mine.Update(move, char)
             //mine.Print()
         }
     }

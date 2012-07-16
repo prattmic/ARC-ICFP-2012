@@ -5,6 +5,8 @@ import (
         "./icfp"
         "fmt"
         "container/list"
+        "os/signal"
+        "time"
 )
 
 const (
@@ -45,6 +47,10 @@ func main() {
     mine.ParseLayout()
     mine.Print()
 
+    //Catch SIGINT
+    sig := make(chan os.Signal, 10)
+    signal.Notify(sig, os.Interrupt)
+
     //Print initial stats
     fmt.Printf("Water: %d\n", mine.Water)
     fmt.Printf("Flooding: %d\n", mine.Flooding)
@@ -58,11 +64,10 @@ func main() {
     bestSol.H = bestSol.GetH()
 
     bestSol.E = mapQ.PushBack(bestSol)
-    //mapQ.Remove(bestSol.E)
-    fmt.Printf("Length: %d\n",mapQ.Len())
 
     options := []byte{'U','D','L','R'}
 
+    fmt.Printf("Distance to lift %d\n",bestSol.Mine.LiftDist())
     var counter = 0
     var Solved = false
 
@@ -75,6 +80,8 @@ func main() {
         tmpSol, ok := mapQ.Front().Value.(*AStar)
         if ok {
             bestSol = tmpSol
+        } else {
+            return
         }
         //fmt.Printf("Length: %d\n",mapQ.Len())
         // make children of Best map
@@ -114,6 +121,17 @@ func main() {
                 }
             }
         }
+
+        select {
+        case <-sig:
+            fmt.Println("SIGINT")
+            bestSol.Mine.Print()
+            fmt.Printf("%+v\n", bestSol.Mine)
+        default:
+            if i%1000 == 0 {
+                time.Sleep(1*time.Microsecond)
+            }
+        }
     }
 
 solved:
@@ -127,7 +145,7 @@ solved:
         }
 }
 func (sol *AStar) GetH() int {
-    return len(sol.Mine.Lambda)*C+0*D
+    return len(sol.Mine.Lambda)*C+sol.Mine.LiftDist()*D
 }
 
 func (sol *AStar) GetD() int {

@@ -170,6 +170,10 @@ func (mine *Mine) IsFlooded(loc Coord) bool {
     return false
 }
 
+func (mine *Mine) LiftDist() int {
+    return Abs(mine.Robot.Coord[0]-mine.Lift.Coord[0]) + Abs(mine.Robot.Coord[1]-mine.Lift.Coord[1])
+}
+
 func (mine *Mine) ValidMove(move Coord, shave bool) bool {
     y := Abs(mine.Robot.Coord[0]-move[0])
     x := Abs(mine.Robot.Coord[1]-move[1])
