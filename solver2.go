@@ -134,7 +134,7 @@ func main() {
         select {
         case <-sig:
             //fmt.Println("SIGINT")
-            //bestSol.Mine.Print()
+            fmt.Printf("%sA",bestSol.Mine.Command)
             //fmt.Printf("%+v\n", bestSol.Mine)
             bestScore.Mine.Print()
             return
@@ -147,10 +147,7 @@ func main() {
 
 solved:
         if Solved {
-            //bestSol.Mine.Print()
-            fmt.Printf("%s\n",bestSol.Mine.Command)
-            //fmt.Printf("Score: %d\n",bestSol.Mine.Score())
-            //fmt.Printf("Counter: %d\n",counter)
+            fmt.Printf("%s",bestSol.Mine.Command)
         } else {
             //fmt.Println("No solution found")
         }
