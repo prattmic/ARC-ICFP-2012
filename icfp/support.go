@@ -66,7 +66,7 @@ func (mine *Mine) FloodFillRouteHome() bool {
             }
             return true
         } else {
-            fmt.Println("Serious Trouble")
+            //fmt.Println("Serious Trouble")
             return false
         }
         if e.Next()!=nil {
@@ -120,7 +120,7 @@ func (mine *Mine) eatLambda(move Coord) error {
     /* Get index in list */
     coordi, err := mine.Lambda.FindCoord(Coord{move[0], move[1]})
     if err != nil {
-        fmt.Printf("Error: %s\n", err)
+        //fmt.Printf("Error: %s\n", err)
         mine.Robot.Lambda--
         return err
     }
@@ -285,7 +285,7 @@ func Abs(n int) int {
 func findSubmatch(reg string, line string) []string {
     re, err := regexp.Compile(reg)
     if err != nil {
-        fmt.Printf("Error: %s", err)
+        //fmt.Printf("Error: %s", err)
         return nil
     }
 

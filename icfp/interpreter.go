@@ -6,7 +6,7 @@ import (
         "bufio"
         "strconv"
         "regexp"
-        "fmt"
+        //"fmt"
 )
 
 type Cell interface {
@@ -266,11 +266,11 @@ func (mine *Mine) Load(r *bufio.Reader, capacity uint32, printonread bool) (err 
         if err == io.EOF {
             break
         } else if err != nil {
-            fmt.Printf("Error: %s\n", err)
+            //fmt.Printf("Error: %s\n", err)
         }
 
         if printonread {
-            fmt.Println(string(line))
+            //fmt.Println(string(line))
         }
 
         // Blank
