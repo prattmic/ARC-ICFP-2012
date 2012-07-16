@@ -131,7 +131,7 @@ func main() {
         select {
         case <-sig:
             //fmt.Println("SIGINT")
-            bestScore.Mine.Print()
+            fmt.Printf("%sA",bestSol.Mine.Command)
             //fmt.Printf("%+v\n", bestSol.Mine)
             return
         default:
@@ -144,7 +144,7 @@ func main() {
 solved:
         if Solved {
             bestSol.Mine.Print()
-            fmt.Printf("%s\n",bestSol.Mine.Command)
+            fmt.Printf("%s",bestSol.Mine.Command)
             fmt.Printf("Score: %d\n",bestSol.Mine.Score())
             fmt.Printf("Counter: %d\n",counter)
         } else {
