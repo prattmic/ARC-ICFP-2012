@@ -4,5 +4,6 @@ icfp2012
 solver1
 solver2
 interactive
+lifter
 server
 *.fuse*
