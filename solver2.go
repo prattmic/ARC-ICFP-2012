@@ -74,7 +74,7 @@ func main() {
 
     bestSol.E = mapQ.PushBack(bestSol)
 
-    options := []byte{'U','D','L','R'}
+    options := []byte{'U','D','L','R','S'}
 
     //fmt.Printf("Distance to lift %d\n",bestSol.Mine.LiftDist())
     var counter = 0
@@ -97,7 +97,7 @@ func main() {
 
         // make children of Best map
         mapQ.Remove(bestSol.E)
-        for j:=0;j<4;j++ {
+        for j:=0;j<5;j++ {
             newMine := bestSol.Mine.Copy()
             if move(newMine,options[j]) && !newMine.Robot.Dead {
                 //if newMine.FloodFillRouteHome() {
@@ -136,10 +136,10 @@ func main() {
             //fmt.Println("SIGINT")
             fmt.Printf("%sA",bestSol.Mine.Command)
             //fmt.Printf("%+v\n", bestSol.Mine)
-            bestScore.Mine.Print()
+            //bestScore.Mine.Print()
             return
         default:
-            if i%1000 == 0 {
+            if i%20 == 0 {
                 time.Sleep(1*time.Microsecond)
             }
         }
