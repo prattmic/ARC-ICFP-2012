@@ -57,7 +57,13 @@ func main() {
     fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
     fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
+    bestScore := new(AStar)
+    bestScore.Mine = mine
+    bestScore.D = 0
+    bestScore.H = 0
+
     mapQ := list.New()
+
     bestSol := new(AStar)
     bestSol.Mine = mine
     bestSol.D = bestSol.GetD()
@@ -72,10 +78,7 @@ func main() {
     var Solved = false
 
     for i:=1;i<1500;i++ {
-        
-        if i%500==0 {
-            bestSol.Mine.Print()
-        }
+
         //Select Best Map
         tmpSol, ok := mapQ.Front().Value.(*AStar)
         if ok {
@@ -83,11 +86,14 @@ func main() {
         } else {
             return
         }
-        //fmt.Printf("Length: %d\n",mapQ.Len())
+
+        //Copy off highest score
+        if bestSol.Mine.Score() > bestScore.Mine.Score() {
+            bestScore = bestSol
+        }
+
         // make children of Best map
         mapQ.Remove(bestSol.E)
-        //fmt.Printf("Length: %d\n",mapQ.Len())
-
         for j:=0;j<4;j++ {
             newMine := bestSol.Mine.Copy()
             if move(newMine,options[j]) && !newMine.Robot.Dead {
@@ -124,9 +130,10 @@ func main() {
 
         select {
         case <-sig:
-            fmt.Println("SIGINT")
-            bestSol.Mine.Print()
-            fmt.Printf("%+v\n", bestSol.Mine)
+            //fmt.Println("SIGINT")
+            bestScore.Mine.Print()
+            //fmt.Printf("%+v\n", bestSol.Mine)
+            return
         default:
             if i%1000 == 0 {
                 time.Sleep(1*time.Microsecond)
