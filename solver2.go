@@ -77,7 +77,7 @@ func main() {
     var counter = 0
     var Solved = false
 
-    for i:=1;i<1500;i++ {
+    for i:=1;i<15000000;i++ {
 
         //Select Best Map
         tmpSol, ok := mapQ.Front().Value.(*AStar)
