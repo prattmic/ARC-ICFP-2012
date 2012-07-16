@@ -7,6 +7,7 @@ import (
         "container/list"
         "os/signal"
         "time"
+        "bufio"
 )
 
 const (
@@ -28,16 +29,18 @@ func usage() {
 }
 
 func main() {
-    if len(os.Args) != 2 {
-        usage()
-    }
+    //if len(os.Args) != 2 {
+    //    usage()
+    //}
 
-    fmt.Println("********************");
-    fmt.Println("* Solver 2         *");
-    fmt.Println("********************");
+    //fmt.Println("********************");
+    //fmt.Println("* Solver 2         *");
+    //fmt.Println("********************");
 
     mine := new(icfp.Mine)
-    err := mine.FromFile(os.Args[1], 100, false)
+    //err := mine.FromFile(os.Args[1], 100, false)
+    r := bufio.NewReaderSize(os.Stdin, 64)
+    err := mine.Load(r, 100, false)
 
     if err != nil {
         fmt.Printf("Map failed to load, Error: %s\n", err)
@@ -45,17 +48,17 @@ func main() {
 
     //Load map data
     mine.ParseLayout()
-    mine.Print()
+    //mine.Print()
 
     //Catch SIGINT
     sig := make(chan os.Signal, 10)
     signal.Notify(sig, os.Interrupt)
 
     //Print initial stats
-    fmt.Printf("Water: %d\n", mine.Water)
-    fmt.Printf("Flooding: %d\n", mine.Flooding)
-    fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
-    fmt.Printf("Trampolines: %v\n", mine.Trampolines)
+    //fmt.Printf("Water: %d\n", mine.Water)
+    //fmt.Printf("Flooding: %d\n", mine.Flooding)
+    //fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
+    //fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
     mapQ := list.New()
     bestSol := new(AStar)
@@ -67,7 +70,7 @@ func main() {
 
     options := []byte{'U','D','L','R'}
 
-    fmt.Printf("Distance to lift %d\n",bestSol.Mine.LiftDist())
+    //fmt.Printf("Distance to lift %d\n",bestSol.Mine.LiftDist())
     var counter = 0
     var Solved = false
 
@@ -120,9 +123,9 @@ func main() {
 
         select {
         case <-sig:
-            fmt.Println("SIGINT")
-            bestSol.Mine.Print()
-            fmt.Printf("%+v\n", bestSol.Mine)
+            //fmt.Println("SIGINT")
+            //bestSol.Mine.Print()
+            //fmt.Printf("%+v\n", bestSol.Mine)
         default:
             if i%1000 == 0 {
                 time.Sleep(1*time.Microsecond)
@@ -132,12 +135,12 @@ func main() {
 
 solved:
         if Solved {
-            bestSol.Mine.Print()
+            //bestSol.Mine.Print()
             fmt.Printf("%s\n",bestSol.Mine.Command)
-            fmt.Printf("Score: %d\n",bestSol.Mine.Score())
-            fmt.Printf("Counter: %d\n",counter)
+            //fmt.Printf("Score: %d\n",bestSol.Mine.Score())
+            //fmt.Printf("Counter: %d\n",counter)
         } else {
-            fmt.Println("No solution found")
+            //fmt.Println("No solution found")
         }
 }
 func (sol *AStar) GetH() int {

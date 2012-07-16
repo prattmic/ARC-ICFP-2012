@@ -250,6 +250,12 @@ func (mine *Mine) FromFile(name string, capacity uint32, printonread bool) (err 
     
     r := bufio.NewReaderSize(file, int(fileinfo.Size()))
 
+    mine.Load(r, capacity, printonread)
+
+    return err
+}
+
+func (mine *Mine) Load(r *bufio.Reader, capacity uint32, printonread bool) (err error) {
     data := make(Map, 0, capacity)
 
     mine.Init()
