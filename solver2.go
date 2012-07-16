@@ -11,10 +11,10 @@ import (
 )
 
 const (
-    C   int = 3
-    D   int = 1
-    E   int = 1
-    F   int = 2
+    C   int = 45
+    D   int = 10
+    E   int = 40
+    F   int = 35
 )
 
 type AStar struct {
@@ -60,7 +60,13 @@ func main() {
     //fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
     //fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
+    bestScore := new(AStar)
+    bestScore.Mine = mine
+    bestScore.D = 0
+    bestScore.H = 0
+
     mapQ := list.New()
+
     bestSol := new(AStar)
     bestSol.Mine = mine
     bestSol.D = bestSol.GetD()
@@ -74,7 +80,8 @@ func main() {
     var counter = 0
     var Solved = false
 
-    for i:=1;i<500000;i++ {
+    for i:=1;i<15000000;i++ {
+
         //Select Best Map
         tmpSol, ok := mapQ.Front().Value.(*AStar)
         if ok {
@@ -83,26 +90,19 @@ func main() {
             return
         }
 
-        for e:= mapQ.Front().Next(); e!= nil; e=e.Next() {
-            tmpSol ,ok := e.Value.(*AStar)
-            if ok {
-                if tmpSol.H+tmpSol.D<=bestSol.H+bestSol.D {
-                    bestSol = tmpSol
-                    //mapQ.Remove(bestSol.E)
-                }
-            }
+        //Copy off highest score
+        if bestSol.Mine.Score() > bestScore.Mine.Score() {
+            bestScore = bestSol
         }
-        //bestSol.Mine.Print() 
-        //fmt.Printf("Moves: %s\n",bestSol.Mine.Command)
 
-        //fmt.Printf("Length: %d\n",mapQ.Len())
         // make children of Best map
         mapQ.Remove(bestSol.E)
-        //fmt.Printf("Length: %d\n",mapQ.Len())
-
         for j:=0;j<4;j++ {
             newMine := bestSol.Mine.Copy()
             if move(newMine,options[j]) && !newMine.Robot.Dead {
+                //if newMine.FloodFillRouteHome() {
+                //    fmt.Println("Clear to go home")
+                //}
                 counter++
                 //Create new sol
                 tmpSol := new(AStar)
@@ -110,9 +110,19 @@ func main() {
                 tmpSol.D = tmpSol.GetD()
                 tmpSol.H = tmpSol.GetH()
 
-                //tmpSol.Mine.Print()
-                tmpSol.E = mapQ.PushFront(tmpSol)
-                //fmt.Printf("%+v\n",newMine.Lambda)
+                //Sort the new solution into the map queue
+                for e:= mapQ.Front(); e!= nil; e=e.Next() {
+                    stackSol ,ok := e.Value.(*AStar)
+                    if ok {
+                        if (tmpSol.H+tmpSol.D)<(stackSol.H+stackSol.D) {
+                            tmpSol.E = mapQ.InsertBefore(tmpSol,e)
+                            break;
+                        }                     }
+                }
+                if tmpSol.E==nil {
+                    tmpSol.E = mapQ.PushBack(tmpSol)
+                }
+
                 if newMine.Complete {// || newMine.Robot.Lambda >= 3{
                     bestSol = tmpSol
                     Solved = true
@@ -126,6 +136,8 @@ func main() {
             //fmt.Println("SIGINT")
             //bestSol.Mine.Print()
             //fmt.Printf("%+v\n", bestSol.Mine)
+            bestScore.Mine.Print()
+            return
         default:
             if i%1000 == 0 {
                 time.Sleep(1*time.Microsecond)
