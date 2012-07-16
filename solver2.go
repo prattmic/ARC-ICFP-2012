@@ -8,10 +8,10 @@ import (
 )
 
 const (
-    C   int = 1
-    D   int = 1
-    E   int = 1
-    F   int = 1
+    C   int = 45
+    D   int = 10
+    E   int = 40
+    F   int = 35
 )
 
 type AStar struct {
@@ -66,25 +66,16 @@ func main() {
     var counter = 0
     var Solved = false
 
-    for i:=1;i<500000;i++ {
+    for i:=1;i<1500;i++ {
+        
+        if i%500==0 {
+            bestSol.Mine.Print()
+        }
         //Select Best Map
         tmpSol, ok := mapQ.Front().Value.(*AStar)
         if ok {
             bestSol = tmpSol
         }
-
-        for e:= mapQ.Front().Next(); e!= nil; e=e.Next() {
-            tmpSol ,ok := e.Value.(*AStar)
-            if ok {
-                if tmpSol.H+tmpSol.D<=bestSol.H+bestSol.D {
-                    bestSol = tmpSol
-                    //mapQ.Remove(bestSol.E)
-                }
-            }
-        }
-        //bestSol.Mine.Print() 
-        //fmt.Printf("Moves: %s\n",bestSol.Mine.Command)
-
         //fmt.Printf("Length: %d\n",mapQ.Len())
         // make children of Best map
         mapQ.Remove(bestSol.E)
@@ -93,6 +84,9 @@ func main() {
         for j:=0;j<4;j++ {
             newMine := bestSol.Mine.Copy()
             if move(newMine,options[j]) && !newMine.Robot.Dead {
+                //if newMine.FloodFillRouteHome() {
+                //    fmt.Println("Clear to go home")
+                //}
                 counter++
                 //Create new sol
                 tmpSol := new(AStar)
@@ -100,9 +94,19 @@ func main() {
                 tmpSol.D = tmpSol.GetD()
                 tmpSol.H = tmpSol.GetH()
 
-                //tmpSol.Mine.Print()
-                tmpSol.E = mapQ.PushFront(tmpSol)
-                //fmt.Printf("%+v\n",newMine.Lambda)
+                //Sort the new solution into the map queue
+                for e:= mapQ.Front(); e!= nil; e=e.Next() {
+                    stackSol ,ok := e.Value.(*AStar)
+                    if ok {
+                        if (tmpSol.H+tmpSol.D)<(stackSol.H+stackSol.D) {
+                            tmpSol.E = mapQ.InsertBefore(tmpSol,e)
+                            break;
+                        }                     }
+                }
+                if tmpSol.E==nil {
+                    tmpSol.E = mapQ.PushBack(tmpSol)
+                }
+
                 if newMine.Complete {// || newMine.Robot.Lambda >= 3{
                     bestSol = tmpSol
                     Solved = true

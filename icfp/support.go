@@ -6,6 +6,7 @@ import (
         "errors"
         "bufio"
         "io"
+        "container/list"
 )
 
 func NewMap(ref Map) Map {
@@ -42,6 +43,49 @@ func (mine *Mine) Copy() *Mine {
     return tmp
 }
 
+func (mine *Mine) FloodFillRouteHome() bool {
+    //
+    endNodes := list.New()
+    end := Coord{mine.Lift.Coord[0],mine.Lift.Coord[1]}
+    endNodes.PushBack(end)
+
+    for e:= endNodes.Front(); e!= nil; {
+        tmpNode ,ok := e.Value.(Coord)
+        if ok {
+            if mine.isWalkable(Coord{tmpNode[0]+1,tmpNode[1]}) {
+                endNodes.PushFront(Coord{tmpNode[0]+1,tmpNode[1]})
+            }
+            if mine.isWalkable(Coord{tmpNode[0]-1,tmpNode[1]}) {
+                endNodes.PushFront(Coord{tmpNode[0]-1,tmpNode[1]})
+            }
+            if mine.isWalkable(Coord{tmpNode[0],tmpNode[1]+1}) {
+                endNodes.PushFront(Coord{tmpNode[0],tmpNode[1]+1})
+            }
+            if mine.isWalkable(Coord{tmpNode[0],tmpNode[1]-1}) {
+                endNodes.PushFront(Coord{tmpNode[0],tmpNode[1]-1})
+            }
+            return true
+        } else {
+            fmt.Println("Serious Trouble")
+            return false
+        }
+        if e.Next()!=nil {
+            e = e.Next()
+            if e.Prev()!=nil {
+                endNodes.Remove(e.Prev())
+            }
+        }
+    }
+    return true
+}
+func (mine *Mine) isWalkable(coord Coord) bool {
+    if coord[0] < len(mine.Layout) {
+        if coord[1] < len(mine.Layout[coord[0]]) {
+            return true
+        }
+    }
+    return false
+}
 func (tramp *Tramp) Copy() Tramp {
     cpy := make(Tramp)
 
