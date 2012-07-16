@@ -5,6 +5,8 @@ import (
         "./icfp"
         "fmt"
         "container/list"
+        "os/signal"
+        "time"
 )
 
 const (
@@ -44,6 +46,10 @@ func main() {
     //Load map data
     mine.ParseLayout()
     mine.Print()
+
+    //Catch SIGINT
+    sig := make(chan os.Signal, 10)
+    signal.Notify(sig, os.Interrupt)
 
     //Print initial stats
     fmt.Printf("Water: %d\n", mine.Water)
@@ -107,6 +113,16 @@ func main() {
                     Solved = true
                     goto solved
                 }
+            }
+        }
+
+        select {
+        case <-sig:
+            fmt.Println("SIGINT")
+            bestSol.Mine.Print()
+        default:
+            if i%1000 == 0 {
+                time.Sleep(1*time.Microsecond)
             }
         }
     }
