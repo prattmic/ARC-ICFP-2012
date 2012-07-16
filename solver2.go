@@ -76,6 +76,8 @@ func main() {
         tmpSol, ok := mapQ.Front().Value.(*AStar)
         if ok {
             bestSol = tmpSol
+        } else {
+            return
         }
 
         for e:= mapQ.Front().Next(); e!= nil; e=e.Next() {
@@ -120,6 +122,7 @@ func main() {
         case <-sig:
             fmt.Println("SIGINT")
             bestSol.Mine.Print()
+            fmt.Printf("%+v\n", bestSol.Mine)
         default:
             if i%1000 == 0 {
                 time.Sleep(1*time.Microsecond)
