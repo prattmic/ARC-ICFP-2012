@@ -135,9 +135,10 @@ func main() {
         select {
         case <-sig:
             fmt.Println("SIGINT\n")
-            fmt.Printf("%sA\n",bestSol.Mine.Command)
+            fmt.Printf("%sA\n",bestScore.Mine.Command)
+            bestScore.Mine.Robot.Abort = true
             fmt.Printf("Score: %d\n", bestScore.Mine.Score())
-            fmt.Printf("\n%+v\n", bestSol.Mine)
+            fmt.Printf("\n%+v\n", bestScore.Mine)
             bestScore.Mine.Print()
             return
         default:
@@ -149,9 +150,9 @@ func main() {
 
 solved:
         if Solved {
-            fmt.Printf("%s",bestSol.Mine.Command)
+            fmt.Printf("%s",bestScore.Mine.Command)
             fmt.Printf("Score: %d\n", bestScore.Mine.Score())
-            fmt.Printf("\n%+v\n", bestSol.Mine)
+            fmt.Printf("\n%+v\n", bestScore.Mine)
             bestScore.Mine.Print()
         } else {
             //fmt.Println("No solution found")
