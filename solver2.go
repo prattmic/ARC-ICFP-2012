@@ -48,17 +48,17 @@ func main() {
 
     //Load map data
     mine.ParseLayout()
-    //mine.Print()
+    mine.Print()
 
     //Catch SIGINT
     sig := make(chan os.Signal, 10)
     signal.Notify(sig, os.Interrupt)
 
     //Print initial stats
-    //fmt.Printf("Water: %d\n", mine.Water)
-    //fmt.Printf("Flooding: %d\n", mine.Flooding)
-    //fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
-    //fmt.Printf("Trampolines: %v\n", mine.Trampolines)
+    fmt.Printf("Water: %d\n", mine.Water)
+    fmt.Printf("Flooding: %d\n", mine.Flooding)
+    fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
+    fmt.Printf("Trampolines: %v\n", mine.Trampolines)
 
     bestScore := new(AStar)
     bestScore.Mine = mine
@@ -133,10 +133,11 @@ func main() {
 
         select {
         case <-sig:
-            //fmt.Println("SIGINT")
-            fmt.Printf("%sA",bestSol.Mine.Command)
-            //fmt.Printf("%+v\n", bestSol.Mine)
-            //bestScore.Mine.Print()
+            fmt.Println("SIGINT\n")
+            fmt.Printf("%sA\n",bestSol.Mine.Command)
+            fmt.Printf("Score: %d\n", bestScore.Mine.Score())
+            fmt.Printf("\n%+v\n", bestSol.Mine)
+            bestScore.Mine.Print()
             return
         default:
             if i%20 == 0 {
@@ -148,6 +149,9 @@ func main() {
 solved:
         if Solved {
             fmt.Printf("%s",bestSol.Mine.Command)
+            fmt.Printf("Score: %d\n", bestScore.Mine.Score())
+            fmt.Printf("\n%+v\n", bestSol.Mine)
+            bestScore.Mine.Print()
         } else {
             //fmt.Println("No solution found")
         }
