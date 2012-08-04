@@ -45,11 +45,11 @@ func (c RockCell) Update(coord Coord, mine *Mine, updated Map) {
         updated[i][j] = EMPTY
         updated[i+1][j] = ROCK
 
-    case (mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == LAMBDA) && mine.Layout[i][j+1] == EMPTY &&  mine.Layout[i+1][j+1] == EMPTY:
+    case (mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == HOROCK || mine.Layout[i+1][j] == LAMBDA) && mine.Layout[i][j+1] == EMPTY &&  mine.Layout[i+1][j+1] == EMPTY:
         //Rule 2 and 4
         updated[i][j] = EMPTY
         updated[i+1][j+1] = ROCK
-    case mine.Layout[i+1][j] == ROCK && mine.Layout[i][j-1] == EMPTY && mine.Layout[i+1][j-1] == EMPTY:
+    case (mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == HOROCK) && mine.Layout[i][j-1] == EMPTY && mine.Layout[i+1][j-1] == EMPTY:
         //Rule 3
         updated[i][j] = EMPTY
         updated[i+1][j-1] = ROCK
@@ -72,6 +72,67 @@ func (c RockCell) MergeRobot(coord Coord, mine *Mine) bool {
 }
 
 func (c RockCell) Byte() byte {
+    return byte(c)
+}
+
+/*****************HORock****************/
+
+func (c HORockCell) Parse(coord Coord, mine *Mine) {
+    return
+}
+
+func (c HORockCell) Update(coord Coord, mine *Mine, updated Map) {
+    i := coord[0]
+    j := coord[1]
+
+    switch {
+    case mine.Layout[i+1][j] == EMPTY:
+        //Rule 1
+        updated[i][j] = EMPTY
+        if (i+2) >= len(updated) || updated[i+2][j] != EMPTY {
+            updated[i+1][j] = LAMBDA
+            updated[i+1][j].Parse(Coord{i+1,j}, mine)
+        } else {
+            updated[i+1][j] = HOROCK
+        }
+
+    case (mine.Layout[i+1][j] == HOROCK || mine.Layout[i+1][j] == ROCK || mine.Layout[i+1][j] == LAMBDA) && mine.Layout[i][j+1] == EMPTY &&  mine.Layout[i+1][j+1] == EMPTY:
+        //Rule 2 and 4
+        updated[i][j] = EMPTY
+        if (i+2) >= len(updated) || updated[i+2][j+1] != EMPTY {
+            updated[i+1][j+1] = LAMBDA
+            updated[i+1][j+1].Parse(Coord{i+1,j+1}, mine)
+        } else {
+            updated[i+1][j+1] = HOROCK
+        }
+    case (mine.Layout[i+1][j] == HOROCK || mine.Layout[i+1][j] == ROCK) && mine.Layout[i][j-1] == EMPTY && mine.Layout[i+1][j-1] == EMPTY:
+        //Rule 3
+        updated[i][j] = EMPTY
+        if (i+2) >= len(updated) || updated[i+2][j-1] != EMPTY {
+            updated[i+1][j-1] = LAMBDA
+            updated[i+1][j-1].Parse(Coord{i+1,j-1}, mine)
+        } else {
+            updated[i+1][j-1] = HOROCK
+        }
+    default:
+        updated[i][j] = HOROCK
+    }
+}
+
+func (c HORockCell) MergeRobot(coord Coord, mine *Mine) bool {
+    switch {
+    case mine.Robot.Coord[1]<coord[1]:
+        mine.Layout[coord[0]][coord[1]+1] = HOROCK
+        return true
+    case mine.Robot.Coord[1]>coord[1]:
+        mine.Layout[coord[0]][coord[1]-1] = HOROCK
+        return true
+    }
+
+    return false
+}
+
+func (c HORockCell) Byte() byte {
     return byte(c)
 }
 

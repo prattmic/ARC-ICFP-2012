@@ -21,6 +21,7 @@ type CellSliceSlice []CellSlice
 
 type RobotCell  byte
 type RockCell   byte
+type HORockCell byte
 type WallCell   byte
 type LambdaCell byte
 type EarthCell  byte
@@ -71,6 +72,7 @@ type Mine struct {
 const (
     ROBOT   RobotCell   = 'R'
     ROCK    RockCell    = '*'
+    HOROCK  HORockCell  = '@'
     WALL    WallCell    = '#'
     LAMBDA  LambdaCell  = '\\'
     EARTH   EarthCell   = '.'

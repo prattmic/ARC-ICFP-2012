@@ -216,8 +216,10 @@ func Byte2Cell(char byte) Cell {
     switch {
     case char == byte(ROBOT):
         return RobotCell(char)
-    case char == byte(ROCK) || char == '@':
+    case char == byte(ROCK):
         return RockCell(char)
+    case char == byte(HOROCK):
+        return HORockCell(char)
     case char == byte(WALL):
         return WallCell(char)
     case char == byte(LAMBDA):
