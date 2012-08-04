@@ -59,6 +59,7 @@ func main() {
     fmt.Printf("Flooding: %d\n", mine.Flooding)
     fmt.Printf("Waterproof: %d\n", mine.Robot.Waterproof)
     fmt.Printf("Trampolines: %v\n", mine.Trampolines)
+    fmt.Printf("Growth: %v\n", mine.Growth)
 
     bestScore := new(AStar)
     bestScore.Mine = mine
