@@ -78,6 +78,7 @@ func (c RockCell) Byte() byte {
 /*****************HORock****************/
 
 func (c HORockCell) Parse(coord Coord, mine *Mine) {
+    mine.HOCount++
     return
 }
 
@@ -91,6 +92,7 @@ func (c HORockCell) Update(coord Coord, mine *Mine, updated Map) {
         updated[i][j] = EMPTY
         if (i+2) >= len(updated) || updated[i+2][j] != EMPTY {
             updated[i+1][j] = LAMBDA
+            mine.HOCount--;
             updated[i+1][j].Parse(Coord{i+1,j}, mine)
         } else {
             updated[i+1][j] = HOROCK
@@ -101,6 +103,7 @@ func (c HORockCell) Update(coord Coord, mine *Mine, updated Map) {
         updated[i][j] = EMPTY
         if (i+2) >= len(updated) || updated[i+2][j+1] != EMPTY {
             updated[i+1][j+1] = LAMBDA
+            mine.HOCount--;
             updated[i+1][j+1].Parse(Coord{i+1,j+1}, mine)
         } else {
             updated[i+1][j+1] = HOROCK
@@ -110,6 +113,7 @@ func (c HORockCell) Update(coord Coord, mine *Mine, updated Map) {
         updated[i][j] = EMPTY
         if (i+2) >= len(updated) || updated[i+2][j-1] != EMPTY {
             updated[i+1][j-1] = LAMBDA
+            mine.HOCount--;
             updated[i+1][j-1].Parse(Coord{i+1,j-1}, mine)
         } else {
             updated[i+1][j-1] = HOROCK

@@ -128,7 +128,7 @@ func (mine *Mine) eatLambda(move Coord) error {
     /* Delete it */
     mine.Lambda = append(mine.Lambda[:coordi], mine.Lambda[coordi+1:]...)
 
-    if len(mine.Lambda) == 0 {
+    if len(mine.Lambda) == 0 && mine.HOCount == 0 {
         mine.Lift.Open = true
     }
 

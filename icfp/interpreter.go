@@ -66,6 +66,7 @@ type Mine struct {
     Flooding    int
     Growth      int
     Gcount      int
+    HOCount     int
     Complete    bool
 }
 
@@ -95,6 +96,7 @@ func (mine *Mine) Init() {
     mine.Command = make([]byte,0,100)
     mine.Growth = 25 - 1
     mine.Robot.Razors = 0
+    mine.HOCount = 0;
 }
 
 func (mine *Mine) ParseLayout() {
